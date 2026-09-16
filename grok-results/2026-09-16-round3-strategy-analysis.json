@@ -1,0 +1,41 @@
+{
+  "author": "Ops (Grok Bot)",
+  "source": "bba-results/round3-hl-full-2026-09-16.json",
+  "generated_at": "2026-09-16",
+  "supersedes": "local bba-proxy-backtest round3_365d analysis",
+  "metrics_echo": {
+    "total_return_pct": 4.33,
+    "max_drawdown_pct": 12.65,
+    "sharpe_ratio": 0.415,
+    "num_trades": 15,
+    "win_rate_pct": 33.33,
+    "total_costs": 79.9,
+    "cost_share_of_gross": 0.536,
+    "btc_hodl_return_pct": -35.26
+  },
+  "top_failure_modes": [
+    {
+      "name": "BREAKEVEN_STOP too early",
+      "n": 5,
+      "net_pnl": -183.16
+    },
+    {
+      "name": "BELOW_MA50 losers",
+      "n": 3,
+      "net_pnl": -149.85
+    },
+    {
+      "name": "cost drag 54% of gross",
+      "total_costs": 79.9
+    }
+  ],
+  "round4": {
+    "single_knob": "delay/soften BREAKEVEN_STOP (hold +1R for 3 daily bars before arming BE)",
+    "falsifier": [
+      "max_dd>20%",
+      "net_return<=4.33% AND be_stop_count>=4 with mean BE loss worse than -30",
+      "costs>=50% gross AND trade_count not down"
+    ]
+  },
+  "markdown": "grok-results/2026-09-16-round3-strategy-analysis.md"
+}
