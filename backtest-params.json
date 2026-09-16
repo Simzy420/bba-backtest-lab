@@ -207,18 +207,80 @@
         "strategy_logs": "logs/days/2026-09-16/backtest/round4_A_be_stop_delay.json"
       },
       "invented_fills": false
+    },
+    {
+      "round": 4,
+      "subtest": "D",
+      "date": "2026-09-16",
+      "label": "funding-flatten-D",
+      "params": {
+        "baseline": "round3-hl-full",
+        "knob": "FUNDING_FLATTEN",
+        "knob_detail": {
+          "description": "After a position has been open \u22652 calendar days (daily bars; \u226548h), if cumulative funding paid is adverse (longs always pay the official HL 8h rate in this engine) AND unrealized gain vs current avg entry is still < +1R, flatten at close for FUNDING_FLATTEN. If unrealized \u2265 +1R, keep holding under existing MA50 / RSI / BE / time / regime / DD exits. BE stop logic, entries, pyramids, universe, cost rates, max concurrent, and DD defense unchanged.",
+          "min_hold_days": 2,
+          "one_r_definition": "Engine has no explicit protective-stop R unit (swing-low risk is computed at entry for logging only and is not a stop). 1R is defined as 3.0% of current avg entry \u2014 the same gain threshold already used to promote probe\u2192confirm in bba-engine/hl_backtest.py. Unrealized is price gain vs avg entry, not net of funding.",
+          "one_r_pct": 3.0,
+          "adverse_funding_rule": "funding_so_far = notional * rate_per_8h * hold_days * 3; adverse if funding_so_far > 0",
+          "exit_priority": "Existing exits fire first on the same bar (BELOW_MA50, RSI_OVERBOUGHT, TIME_STOP, BREAKEVEN_STOP). FUNDING_FLATTEN is an additional 5th check only.",
+          "engine_file": "grok-engine/round4d_funding_flatten.py",
+          "base_engine": "bba-engine/hl_backtest.py"
+        },
+        "isolated": true,
+        "blended": false,
+        "engine_file": "grok-engine/round4d_funding_flatten.py",
+        "base_engine": "bba-engine/hl_backtest.py",
+        "pr": "https://github.com/Simzy420/bba-backtest-lab/pull/2"
+      },
+      "results": {
+        "total_return_pct": 4.14,
+        "num_trades": 26,
+        "win_rate_pct": 30.77,
+        "max_drawdown_pct": 12.04,
+        "sharpe_ratio": 0.384,
+        "profit_factor": 1.594,
+        "total_costs_usd": 30.43,
+        "gross_pnl_usd": 96.52,
+        "net_pnl_usd": 66.12,
+        "cost_to_gross_pct": 31.53,
+        "avg_hold_days": 3.0,
+        "final_equity": 1731.81,
+        "exit_reason_counts": {
+          "FUNDING_FLATTEN": 23,
+          "RSI_OVERBOUGHT": 1,
+          "BACKTEST_END": 2
+        }
+      },
+      "shield": {
+        "dd_limit_pct": 20,
+        "trades_limit": 25,
+        "veto": true,
+        "veto_reason": "num_trades 26 > 25",
+        "dd_ok": true,
+        "note": "DD 12.04% <= 20, trades 26 > 25 \u2192 shield_veto"
+      },
+      "verdict": "FAIL \u2014 vs Round 3: return 4.14% vs 4.33%, Sharpe 0.384 vs 0.415; Shield VETO (26 trades > 25). Cost/gross improved ~54%\u219232% but volume exploded. Do not ship.",
+      "key_lesson": "Funding flatten cut cost/gross but churned exits (FUNDING_FLATTEN dominates). Trade-count shield veto. Reject knob D. A and D both rejects.",
+      "artifacts": {
+        "summary": "grok-results/round4_D_funding_flatten.json",
+        "raw": "grok-results/round4_D_funding_flatten_raw.json",
+        "writeup": "grok-results/2026-09-16-round4d-funding-flatten.md",
+        "strategy_logs": "logs/days/2026-09-16/backtest/round4_D_funding_flatten.json",
+        "pr": "https://github.com/Simzy420/bba-backtest-lab/pull/2"
+      },
+      "invented_fills": false
     }
   ],
   "tested_combinations": [
     "no_regime_no_costs_3x_3pos_20pct \u2192 FAIL",
     "regime_no_costs_2x_2pos_25pct \u2192 PASS (DD too high)",
     "regime_costs_2-3x_2pos_pyramid \u2192 PASS (DD fixed, costs high)",
-    "R4-A BE_STOP_DELAY=+3d calendar vs R3 \u2192 FAIL (ret\u2193 DD\u2191); shield pass"
+    "R4-A BE_STOP_DELAY=+3d calendar vs R3 \u2192 FAIL (ret\u2193 DD\u2191); shield pass",
+    "R4-D FUNDING_FLATTEN 48h unless \u2265+1R \u2192 FAIL vs R3 + Shield VETO (26 trades); cost/gross ~32%"
   ],
   "next_to_test": [
-    "R4-D funding flatten after 48h unless \u2265+1R (isolated; CoS next)",
-    "R4-B entry tighten (isolated; pending call after D or as scheduled)",
-    "R4-C chop ATR/EMA filter (isolated)",
-    "Do NOT ship R4-A; do NOT blend knobs until Boss picks after isolated suite"
+    "Boss picking next isolated test (A and D both rejects)",
+    "Candidates remaining: R4-B entry tighten; R4-C chop ATR/EMA",
+    "Do NOT ship R4-A or R4-D; do NOT blend knobs"
   ]
 }
