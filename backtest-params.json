@@ -3,8 +3,7 @@
     "description": "Big Brain Ape \u2014 Backtest Parameter History. Tracks every parameter combination tested and its result so we never test the same thing twice.",
     "last_updated": "2026-09-16",
     "total_rounds": 4,
-    "note": "Round 4 uses isolated subtests A\u2013D; round number 4 shared across subtests.",
-    "pending_archive": "round4_C_chop_filter.json"
+    "note": "Round 4 uses isolated subtests A\u2013D; round number 4 shared across subtests."
   },
   "rounds": [
     {
@@ -319,6 +318,65 @@
         "strategy_logs": "logs/days/2026-09-16/backtest/round4_R1_transition_probe_only.json"
       },
       "invented_fills": false
+    },
+    {
+      "round": 4,
+      "subtest": "C",
+      "date": "2026-09-16",
+      "label": "chop-filter-C",
+      "params": {
+        "baseline": "round3-hl-full",
+        "knob": "CHOP_FILTER",
+        "knob_detail": {
+          "description": "Skip NEW entries/new probes when EITHER daily ATR% is below its 20-bar median on that symbol OR |EMA20\u2212EMA50|/close < 0.4%. Existing positions are not force-exited for chop. BE stops, pyramids, regime, sizes, costs, universe, DD circuit unchanged.",
+          "atr_pct_definition": "ATR(14 Wilder) / close \u00d7 100 (percent units)",
+          "atr_median_bars": 20,
+          "ema_gap_definition": "abs(EMA20-EMA50)/close ; skip if < 0.004 (0.4%)",
+          "ema_span": [
+            20,
+            50
+          ],
+          "timeframe": "daily (official hl_backtest.py; not 1h)",
+          "applies_to": "new_entries_new_probes_only",
+          "engine_file": "grok-engine/round4c_chop_filter.py",
+          "base_engine": "bba-engine/hl_backtest.py"
+        },
+        "isolated": true,
+        "blended": false,
+        "engine_file": "grok-engine/round4c_chop_filter.py",
+        "base_engine": "bba-engine/hl_backtest.py",
+        "pr": "https://github.com/Simzy420/bba-backtest-lab/pull/4"
+      },
+      "results": {
+        "total_return_pct": 14.9,
+        "num_trades": 9,
+        "win_rate_pct": 44.44,
+        "max_drawdown_pct": 8.46,
+        "sharpe_ratio": 1.564,
+        "profit_factor": 2.247,
+        "total_costs_usd": 55.53,
+        "gross_pnl_usd": 300.26,
+        "net_pnl_usd": 244.76,
+        "cost_to_gross_pct": 18.49,
+        "avg_hold_days": 18.2,
+        "final_equity": 1910.71
+      },
+      "shield": {
+        "dd_limit_pct": 20,
+        "trades_limit": 25,
+        "veto": false,
+        "note": "DD 8.46% / trades 9"
+      },
+      "verdict": "PASS \u2014 vs Round 3: return 14.90% vs 4.33%, DD 8.46% vs 12.65%, Sharpe 1.564 vs 0.415, n 9 vs 15, WR ~44%, cost/gross ~18%. Shield PASS. Leading Round 4 candidate.",
+      "key_lesson": "Chop filter (ATR%/EMA-gap) cut weak trades and improved return, DD, Sharpe, WR, and cost/gross. A/D/R1 remain rejects. Prefer C over R3 pending Boss ship decision.",
+      "artifacts": {
+        "summary": "grok-results/round4_C_chop_filter.json",
+        "raw": "grok-results/round4_C_chop_filter_raw.json",
+        "writeup": "grok-results/2026-09-16-round4c-chop-filter.md",
+        "strategy_logs": "logs/days/2026-09-16/backtest/round4_C_chop_filter.json",
+        "pr": "https://github.com/Simzy420/bba-backtest-lab/pull/4"
+      },
+      "invented_fills": false
     }
   ],
   "tested_combinations": [
@@ -327,13 +385,13 @@
     "regime_costs_2-3x_2pos_pyramid \u2192 PASS (DD fixed, costs high)",
     "R4-A BE_STOP_DELAY=+3d calendar vs R3 \u2192 FAIL (ret\u2193 DD\u2191); shield pass",
     "R4-D FUNDING_FLATTEN 48h unless \u2265+1R \u2192 FAIL vs R3 + Shield VETO (26 trades); cost/gross ~32%",
-    "R4-R1 TRANSITION probe-only \u2192 FAIL vs R3 (3.95%/DD12.80%/Sharpe0.386/n=16); shield pass"
+    "R4-R1 TRANSITION probe-only \u2192 FAIL vs R3 (3.95%/DD12.80%/Sharpe0.386/n=16); shield pass",
+    "R4-C CHOP_FILTER ATR%/EMA-gap \u2192 PASS vs R3 (14.90%/DD8.46%/Sharpe1.564/n=9/WR44%/cost~18%); shield pass"
   ],
   "next_to_test": [
-    "R4-C chop filter (ATR%/EMA-gap) \u2014 CoS locked next; archive when grok-results/round4_C_chop_filter.json lands",
-    "Must not lose return vs R3; same Shield (DD>20% or >25 trades)",
-    "If C fails: park and ship R3",
-    "R4-B entry tighten still remaining; closed-+1R still shelved",
-    "Do NOT ship A/D/R1; no blending"
+    "Boss: consider shipping R4-C (chop filter) vs keep R3 \u2014 C is PASS and leads suite",
+    "Optional remaining: R4-B entry tighten (isolated); closed-+1R still shelved",
+    "Do NOT blend C with A/D/R1 rejects; no blending unless Boss allows",
+    "A/D/R1 remain rejects"
   ]
 }
