@@ -3,8 +3,7 @@
     "description": "Big Brain Ape \u2014 Backtest Parameter History. Tracks every parameter combination tested and its result so we never test the same thing twice.",
     "last_updated": "2026-09-16",
     "total_rounds": 4,
-    "note": "Round 4 uses isolated subtests A\u2013D; round number 4 shared across subtests.",
-    "pending_archive": "round4_R1_transition_probe_only.json"
+    "note": "Round 4 uses isolated subtests A\u2013D; round number 4 shared across subtests."
   },
   "rounds": [
     {
@@ -270,6 +269,55 @@
         "pr": "https://github.com/Simzy420/bba-backtest-lab/pull/2"
       },
       "invented_fills": false
+    },
+    {
+      "round": 4,
+      "subtest": "R1",
+      "date": "2026-09-16",
+      "label": "transition-probe-only-R1",
+      "params": {
+        "baseline": "round3-hl-full",
+        "knob": "TRANSITION_PROBE_ONLY",
+        "knob_detail": {
+          "description": "Ban confirm + jugular adds while regime is TRANSITION. Probe entries still allowed in TRANSITION; confirm/jugular pyramiding only when RISK-ON. No other rule changes (BE stops, funding, size, universe, fees unchanged).",
+          "engine_file": "grok-engine/round4_r1_transition_probe_only.py",
+          "base_engine": "bba-engine/hl_backtest.py",
+          "code_change": "pyramiding gate: regime == \"RISK-ON\" (was regime in (\"RISK-ON\", \"TRANSITION\"))"
+        },
+        "isolated": true,
+        "blended": false,
+        "engine_file": "grok-engine/round4_r1_transition_probe_only.py",
+        "base_engine": "bba-engine/hl_backtest.py",
+        "lab_commit": "aa5827a"
+      },
+      "results": {
+        "total_return_pct": 3.95,
+        "num_trades": 16,
+        "win_rate_pct": 31.25,
+        "max_drawdown_pct": 12.8,
+        "sharpe_ratio": 0.386,
+        "profit_factor": 1.177,
+        "total_costs_usd": 80.5,
+        "gross_pnl_usd": 142.82,
+        "net_pnl_usd": 62.32,
+        "avg_hold_days": 14.8,
+        "final_equity": 1728.68
+      },
+      "shield": {
+        "dd_limit_pct": 20,
+        "trades_limit": 25,
+        "veto": false,
+        "note": "DD 12.8% / trades 16"
+      },
+      "verdict": "FAIL \u2014 vs Round 3: return 3.95% vs 4.33%, DD 12.80% vs 12.65%, Sharpe 0.386 vs 0.415, trades 16, WR ~31%. Shield PASS. Do not ship.",
+      "key_lesson": "TRANSITION probe-only alone did not beat R3. A, D, and R1 all rejects. Keep R3 baseline.",
+      "artifacts": {
+        "summary": "grok-results/round4_R1_transition_probe_only.json",
+        "raw": "grok-results/round4_R1_transition_probe_only_raw.json",
+        "writeup": "grok-results/2026-09-16-round4-r1-transition-probe-only.md",
+        "strategy_logs": "logs/days/2026-09-16/backtest/round4_R1_transition_probe_only.json"
+      },
+      "invented_fills": false
     }
   ],
   "tested_combinations": [
@@ -277,12 +325,13 @@
     "regime_no_costs_2x_2pos_25pct \u2192 PASS (DD too high)",
     "regime_costs_2-3x_2pos_pyramid \u2192 PASS (DD fixed, costs high)",
     "R4-A BE_STOP_DELAY=+3d calendar vs R3 \u2192 FAIL (ret\u2193 DD\u2191); shield pass",
-    "R4-D FUNDING_FLATTEN 48h unless \u2265+1R \u2192 FAIL vs R3 + Shield VETO (26 trades); cost/gross ~32%"
+    "R4-D FUNDING_FLATTEN 48h unless \u2265+1R \u2192 FAIL vs R3 + Shield VETO (26 trades); cost/gross ~32%",
+    "R4-R1 TRANSITION probe-only \u2192 FAIL vs R3 (3.95%/DD12.80%/Sharpe0.386/n=16); shield pass"
   ],
   "next_to_test": [
-    "R4-R1 TRANSITION probe-only (ban confirm/jugular) \u2014 CoS locked next; archive when grok-results/round4_R1_transition_probe_only.json lands",
-    "Closed-+1R BE only if still needed after R1",
+    "Boss picking next (A, D, R1 all rejects; keep R3 baseline)",
+    "Closed-+1R BE still shelved",
     "Remaining official isolated: R4-B entry tighten; R4-C chop ATR/EMA",
-    "Do NOT ship R4-A or R4-D; no blending"
+    "Do NOT ship R4-A, R4-D, or R4-R1; no blending"
   ]
 }
