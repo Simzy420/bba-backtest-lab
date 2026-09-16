@@ -3,7 +3,10 @@
     "description": "Big Brain Ape \u2014 Backtest Parameter History. Tracks every parameter combination tested and its result so we never test the same thing twice.",
     "last_updated": "2026-09-16",
     "total_rounds": 4,
-    "note": "Round 4 uses isolated subtests A\u2013D; round number 4 shared across subtests."
+    "note": "Round 4 closed 2026-09-16. Shipped isolated C (chop filter) as new paper baseline. A/D/R1 rejects. No more isolated R4 runs unless Casey asks. No blending. No invented fills.",
+    "current_paper_baseline": "round4-C-chop-filter",
+    "round4_status": "CLOSED",
+    "round4_shipped": "C"
   },
   "rounds": [
     {
@@ -163,7 +166,9 @@
         "avg_hold_days": 15.8
       },
       "verdict": "PASS \u2014 profitable, controlled DD, outperformed BTC by 39.59%",
-      "key_lesson": "Real costs ate 54% of gross. Breakeven stops too early. GOLD is best trade. Need to reduce trade count and widen stops."
+      "key_lesson": "Real costs ate 54% of gross. Breakeven stops too early. GOLD is best trade. Need to reduce trade count and widen stops.",
+      "baseline_status": "SUPERSEDED_BY_R4C",
+      "superseded_by": "round4-C-chop-filter"
     },
     {
       "round": 4,
@@ -367,7 +372,7 @@
         "veto": false,
         "note": "DD 8.46% / trades 9"
       },
-      "verdict": "PASS \u2014 vs Round 3: return 14.90% vs 4.33%, DD 8.46% vs 12.65%, Sharpe 1.564 vs 0.415, n 9 vs 15, WR ~44%, cost/gross ~18%. Shield PASS. Leading Round 4 candidate.",
+      "verdict": "PASS \u2014 SHIPPED as new paper baseline (Boss/CoS 2026-09-16). vs R3: 14.90% vs 4.33%, DD 8.46% vs 12.65%, Sharpe 1.564 vs 0.415, n 9 vs 15, WR ~44%, cost/gross ~18%. Shield PASS. A/D/R1 remain rejects.",
       "key_lesson": "Chop filter (ATR%/EMA-gap) cut weak trades and improved return, DD, Sharpe, WR, and cost/gross. A/D/R1 remain rejects. Prefer C over R3 pending Boss ship decision.",
       "artifacts": {
         "summary": "grok-results/round4_C_chop_filter.json",
@@ -376,7 +381,9 @@
         "strategy_logs": "logs/days/2026-09-16/backtest/round4_C_chop_filter.json",
         "pr": "https://github.com/Simzy420/bba-backtest-lab/pull/4"
       },
-      "invented_fills": false
+      "invented_fills": false,
+      "shipped": true,
+      "baseline_status": "NEW_PAPER_BASELINE"
     }
   ],
   "tested_combinations": [
@@ -389,9 +396,26 @@
     "R4-C CHOP_FILTER ATR%/EMA-gap \u2192 PASS vs R3 (14.90%/DD8.46%/Sharpe1.564/n=9/WR44%/cost~18%); shield pass"
   ],
   "next_to_test": [
-    "Boss: consider shipping R4-C (chop filter) vs keep R3 \u2014 C is PASS and leads suite",
-    "Optional remaining: R4-B entry tighten (isolated); closed-+1R still shelved",
-    "Do NOT blend C with A/D/R1 rejects; no blending unless Boss allows",
-    "A/D/R1 remain rejects"
-  ]
+    "Round 4 CLOSED \u2014 shipped C as paper baseline",
+    "No more isolated R4 runs unless Casey asks",
+    "Optional later research only if Casey asks: R4-B entry tighten; closed-+1R BE",
+    "Standing: paper only; no leverage/size-up; ~15 trades/year feature (C ran n=9)"
+  ],
+  "ship_decision": {
+    "date": "2026-09-16",
+    "decision": "SHIP_R4C",
+    "baseline": "round4-C-chop-filter",
+    "rejected": [
+      "A",
+      "D",
+      "R1"
+    ],
+    "not_run_or_deferred": [
+      "B"
+    ],
+    "authority": "Boss/CoS",
+    "mode": "paper",
+    "blending": false,
+    "invented_fills": false
+  }
 }
