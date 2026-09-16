@@ -1,0 +1,142 @@
+{
+  "metadata": {
+    "description": "Big Brain Ape — Backtest Parameter History. Tracks every parameter combination tested and its result so we never test the same thing twice.",
+    "last_updated": "2026-09-16",
+    "total_rounds": 3
+  },
+  "rounds": [
+    {
+      "round": 1,
+      "date": "2026-08-22",
+      "label": "basic-technical",
+      "params": {
+        "entry_ma_fast": 20,
+        "entry_ma_slow": 50,
+        "entry_rsi_min": 0,
+        "entry_rsi_max": 70,
+        "entry_pullback_pct": 0,
+        "exit_rsi_max": 75,
+        "exit_ma_period": 50,
+        "exit_time_stop_days": 0,
+        "exit_dd_trigger_pct": 0,
+        "regime_filter": false,
+        "pyramiding": false,
+        "max_concurrent": 3,
+        "position_size_pct": 20,
+        "leverage": 3,
+        "hl_fee_bps": 0,
+        "hl_slippage_bps": 0,
+        "funding_rate_8h": 0,
+        "universe": ["NVDA","AAPL","TSLA","MSFT","AMZN","GOOGL","META","^GSPC","^VIX","GC=F","CL=F","BTC","ETH"],
+        "period_days": 180
+      },
+      "results": {
+        "total_return_pct": -67,
+        "num_trades": 52,
+        "win_rate_pct": 38,
+        "max_drawdown_pct": null,
+        "sharpe_ratio": null,
+        "profit_factor": null
+      },
+      "verdict": "FAIL — too many trades, no macro filter, 180% exposure",
+      "key_lesson": "Regime filter is mandatory. Pure technical indicators get whipsawed."
+    },
+    {
+      "round": 2,
+      "date": "2026-08-22",
+      "label": "druck-macro-simplified",
+      "params": {
+        "entry_ma_fast": 20,
+        "entry_ma_slow": 50,
+        "entry_rsi_min": 40,
+        "entry_rsi_max": 65,
+        "entry_pullback_pct": 2,
+        "exit_rsi_max": 75,
+        "exit_ma_period": 50,
+        "exit_time_stop_days": 30,
+        "exit_dd_trigger_pct": 20,
+        "regime_filter": true,
+        "pyramiding": false,
+        "max_concurrent": 2,
+        "position_size_pct": 25,
+        "leverage": 2,
+        "hl_fee_bps": 0,
+        "hl_slippage_bps": 0,
+        "funding_rate_8h": 0,
+        "universe": ["NVDA","AAPL","TSLA","MSFT","AMZN","GOOGL","META","^GSPC","^VIX","GC=F","CL=F","BTC","ETH"],
+        "period_days": 180
+      },
+      "results": {
+        "total_return_pct": 6.43,
+        "num_trades": 6,
+        "win_rate_pct": 50,
+        "max_drawdown_pct": 53.8,
+        "sharpe_ratio": 0.92,
+        "profit_factor": null
+      },
+      "verdict": "PASS but UNACCEPTABLE drawdown",
+      "key_lesson": "Regime filter turned -67% into +6.43%. But 53% DD would trigger defensive mode in real trading."
+    },
+    {
+      "round": 3,
+      "date": "2026-09-16",
+      "label": "hl-full-costs-pyramiding",
+      "params": {
+        "entry_ma_fast": 20,
+        "entry_ma_slow": 50,
+        "entry_rsi_min": 40,
+        "entry_rsi_max": 65,
+        "entry_pullback_pct": 2,
+        "exit_rsi_max": 75,
+        "exit_ma_period": 50,
+        "exit_time_stop_days": 30,
+        "exit_dd_trigger_pct": 20,
+        "regime_filter": true,
+        "pyramiding": true,
+        "pyramid_probe_pct": 10,
+        "pyramid_probe_leverage": 2,
+        "pyramid_confirm_pct": 25,
+        "pyramid_confirm_leverage": 3,
+        "pyramid_jugular_pct": 40,
+        "pyramid_jugular_leverage": 3,
+        "max_concurrent": 2,
+        "hl_fee_bps": 4.5,
+        "hl_slippage_bps": 4.5,
+        "funding_rate_8h_btc_eth": 0.01,
+        "funding_rate_8h_sol": 0.02,
+        "funding_rate_8h_gold_index": 0.01,
+        "universe": ["BTC","ETH","SOL","GOLD","NVDA","TSLA","SP500"],
+        "period_days": 365,
+        "benchmark": "BTC_HODL"
+      },
+      "results": {
+        "total_return_pct": 4.33,
+        "num_trades": 15,
+        "win_rate_pct": 33.33,
+        "max_drawdown_pct": 12.65,
+        "sharpe_ratio": 0.41,
+        "profit_factor": 1.20,
+        "total_costs_usd": 79.90,
+        "gross_pnl_usd": 149.13,
+        "net_pnl_usd": 69.24,
+        "btc_hodl_return_pct": -35.26,
+        "outperformance_pct": 39.59,
+        "best_trade_pnl": 139.39,
+        "worst_trade_pnl": -57.65,
+        "avg_hold_days": 15.8
+      },
+      "verdict": "PASS — profitable, controlled DD, outperformed BTC by 39.59%",
+      "key_lesson": "Real costs ate 54% of gross. Breakeven stops too early. GOLD is best trade. Need to reduce trade count and widen stops."
+    }
+  ],
+  "tested_combinations": [
+    "no_regime_no_costs_3x_3pos_20pct → FAIL",
+    "regime_no_costs_2x_2pos_25pct → PASS (DD too high)",
+    "regime_costs_2-3x_2pos_pyramid → PASS (DD fixed, costs high)"
+  ],
+  "next_to_test": [
+    "regime_costs_2x_2pos_pyramid_wider_stops → reduce premature exits",
+    "regime_costs_2x_2pos_pyramid_stricter_entry → reduce trade count",
+    "regime_costs_2x_2pos_pyramid_gold_overweight → increase best performer"
+  ]
+}

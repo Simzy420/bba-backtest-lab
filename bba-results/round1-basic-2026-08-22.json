@@ -1,0 +1,24 @@
+{
+  "round": 1,
+  "date": "2026-08-22",
+  "label": "basic-technical",
+  "strategy": "Basic technical indicators (MA crossover + RSI), no macro filter",
+  "params": {
+    "entry": "Above 20-day MA, RSI < 70, VIX < 25",
+    "exit": "Below 50-day MA, RSI > 75, VIX > 30",
+    "position_size_pct": 20,
+    "max_concurrent": 3,
+    "leverage": 3,
+    "hl_costs": false,
+    "regime_filter": false,
+    "pyramiding": false
+  },
+  "results": {
+    "total_return_pct": -67,
+    "num_trades": 52,
+    "win_rate_pct": 38,
+    "max_drawdown_pct": null,
+    "verdict": "FAIL \u2014 too many trades, no macro filter, 180% exposure"
+  },
+  "key_lesson": "Regime filter is mandatory. Pure technical indicators get whipsawed."
+}
