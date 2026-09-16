@@ -3,7 +3,8 @@
     "description": "Big Brain Ape \u2014 Backtest Parameter History. Tracks every parameter combination tested and its result so we never test the same thing twice.",
     "last_updated": "2026-09-16",
     "total_rounds": 4,
-    "note": "Round 4 uses isolated subtests A\u2013D; round number 4 shared across subtests."
+    "note": "Round 4 uses isolated subtests A\u2013D; round number 4 shared across subtests.",
+    "pending_archive": "round4_R1_transition_probe_only.json"
   },
   "rounds": [
     {
@@ -279,8 +280,9 @@
     "R4-D FUNDING_FLATTEN 48h unless \u2265+1R \u2192 FAIL vs R3 + Shield VETO (26 trades); cost/gross ~32%"
   ],
   "next_to_test": [
-    "Boss picking next isolated test (A and D both rejects)",
-    "Candidates remaining: R4-B entry tighten; R4-C chop ATR/EMA",
-    "Do NOT ship R4-A or R4-D; do NOT blend knobs"
+    "R4-R1 TRANSITION probe-only (ban confirm/jugular) \u2014 CoS locked next; archive when grok-results/round4_R1_transition_probe_only.json lands",
+    "Closed-+1R BE only if still needed after R1",
+    "Remaining official isolated: R4-B entry tighten; R4-C chop ATR/EMA",
+    "Do NOT ship R4-A or R4-D; no blending"
   ]
 }
