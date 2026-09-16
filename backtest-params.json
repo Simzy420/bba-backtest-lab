@@ -1,8 +1,9 @@
 {
   "metadata": {
-    "description": "Big Brain Ape — Backtest Parameter History. Tracks every parameter combination tested and its result so we never test the same thing twice.",
+    "description": "Big Brain Ape \u2014 Backtest Parameter History. Tracks every parameter combination tested and its result so we never test the same thing twice.",
     "last_updated": "2026-09-16",
-    "total_rounds": 3
+    "total_rounds": 4,
+    "note": "Round 4 uses isolated subtests A\u2013D; round number 4 shared across subtests."
   },
   "rounds": [
     {
@@ -27,7 +28,21 @@
         "hl_fee_bps": 0,
         "hl_slippage_bps": 0,
         "funding_rate_8h": 0,
-        "universe": ["NVDA","AAPL","TSLA","MSFT","AMZN","GOOGL","META","^GSPC","^VIX","GC=F","CL=F","BTC","ETH"],
+        "universe": [
+          "NVDA",
+          "AAPL",
+          "TSLA",
+          "MSFT",
+          "AMZN",
+          "GOOGL",
+          "META",
+          "^GSPC",
+          "^VIX",
+          "GC=F",
+          "CL=F",
+          "BTC",
+          "ETH"
+        ],
         "period_days": 180
       },
       "results": {
@@ -38,7 +53,7 @@
         "sharpe_ratio": null,
         "profit_factor": null
       },
-      "verdict": "FAIL — too many trades, no macro filter, 180% exposure",
+      "verdict": "FAIL \u2014 too many trades, no macro filter, 180% exposure",
       "key_lesson": "Regime filter is mandatory. Pure technical indicators get whipsawed."
     },
     {
@@ -63,7 +78,21 @@
         "hl_fee_bps": 0,
         "hl_slippage_bps": 0,
         "funding_rate_8h": 0,
-        "universe": ["NVDA","AAPL","TSLA","MSFT","AMZN","GOOGL","META","^GSPC","^VIX","GC=F","CL=F","BTC","ETH"],
+        "universe": [
+          "NVDA",
+          "AAPL",
+          "TSLA",
+          "MSFT",
+          "AMZN",
+          "GOOGL",
+          "META",
+          "^GSPC",
+          "^VIX",
+          "GC=F",
+          "CL=F",
+          "BTC",
+          "ETH"
+        ],
         "period_days": 180
       },
       "results": {
@@ -105,7 +134,15 @@
         "funding_rate_8h_btc_eth": 0.01,
         "funding_rate_8h_sol": 0.02,
         "funding_rate_8h_gold_index": 0.01,
-        "universe": ["BTC","ETH","SOL","GOLD","NVDA","TSLA","SP500"],
+        "universe": [
+          "BTC",
+          "ETH",
+          "SOL",
+          "GOLD",
+          "NVDA",
+          "TSLA",
+          "SP500"
+        ],
         "period_days": 365,
         "benchmark": "BTC_HODL"
       },
@@ -115,8 +152,8 @@
         "win_rate_pct": 33.33,
         "max_drawdown_pct": 12.65,
         "sharpe_ratio": 0.41,
-        "profit_factor": 1.20,
-        "total_costs_usd": 79.90,
+        "profit_factor": 1.2,
+        "total_costs_usd": 79.9,
         "gross_pnl_usd": 149.13,
         "net_pnl_usd": 69.24,
         "btc_hodl_return_pct": -35.26,
@@ -125,18 +162,63 @@
         "worst_trade_pnl": -57.65,
         "avg_hold_days": 15.8
       },
-      "verdict": "PASS — profitable, controlled DD, outperformed BTC by 39.59%",
+      "verdict": "PASS \u2014 profitable, controlled DD, outperformed BTC by 39.59%",
       "key_lesson": "Real costs ate 54% of gross. Breakeven stops too early. GOLD is best trade. Need to reduce trade count and widen stops."
+    },
+    {
+      "round": 4,
+      "subtest": "A",
+      "date": "2026-09-16",
+      "label": "be-stop-delay-A",
+      "params": {
+        "baseline": "round3-hl-full",
+        "knob": "BE_STOP_DELAY",
+        "be_arm_delay_calendar_days": 3,
+        "isolated": true,
+        "blended": false,
+        "engine_file": "grok-engine/round4a_be_stop_delay.py",
+        "base_engine": "bba-engine/hl_backtest.py"
+      },
+      "results": {
+        "total_return_pct": 4.02,
+        "num_trades": 15,
+        "win_rate_pct": 33.33,
+        "max_drawdown_pct": 19.34,
+        "sharpe_ratio": 0.342,
+        "profit_factor": 1.186,
+        "total_costs_usd": 80.12,
+        "gross_pnl_usd": 145.19,
+        "net_pnl_usd": 65.08,
+        "avg_hold_days": 15.3,
+        "final_equity": 1729.88
+      },
+      "shield": {
+        "dd_limit_pct": 20,
+        "trades_limit": 25,
+        "veto": false,
+        "note": "DD 19.34% <= 20, trades 15 <= 25"
+      },
+      "verdict": "FAIL \u2014 vs Round 3: worse return (4.02% vs 4.33%) and higher DD (19.34% vs 12.65%); Sharpe 0.342 vs 0.415. Shield PASS but do not ship.",
+      "key_lesson": "Calendar BE delay alone did not help; lifted DD toward shield line without improving WR or return. Reject knob A.",
+      "artifacts": {
+        "summary": "grok-results/round4_A_be_stop_delay.json",
+        "raw": "grok-results/round4_A_be_stop_delay_raw.json",
+        "writeup": "grok-results/2026-09-16-round4a-be-stop-delay.md",
+        "strategy_logs": "logs/days/2026-09-16/backtest/round4_A_be_stop_delay.json"
+      },
+      "invented_fills": false
     }
   ],
   "tested_combinations": [
-    "no_regime_no_costs_3x_3pos_20pct → FAIL",
-    "regime_no_costs_2x_2pos_25pct → PASS (DD too high)",
-    "regime_costs_2-3x_2pos_pyramid → PASS (DD fixed, costs high)"
+    "no_regime_no_costs_3x_3pos_20pct \u2192 FAIL",
+    "regime_no_costs_2x_2pos_25pct \u2192 PASS (DD too high)",
+    "regime_costs_2-3x_2pos_pyramid \u2192 PASS (DD fixed, costs high)",
+    "R4-A BE_STOP_DELAY=+3d calendar vs R3 \u2192 FAIL (ret\u2193 DD\u2191); shield pass"
   ],
   "next_to_test": [
-    "regime_costs_2x_2pos_pyramid_wider_stops → reduce premature exits",
-    "regime_costs_2x_2pos_pyramid_stricter_entry → reduce trade count",
-    "regime_costs_2x_2pos_pyramid_gold_overweight → increase best performer"
+    "R4-D funding flatten after 48h unless \u2265+1R (isolated; CoS next)",
+    "R4-B entry tighten (isolated; pending call after D or as scheduled)",
+    "R4-C chop ATR/EMA filter (isolated)",
+    "Do NOT ship R4-A; do NOT blend knobs until Boss picks after isolated suite"
   ]
 }
