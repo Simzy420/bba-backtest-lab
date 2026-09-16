@@ -168,3 +168,25 @@
 5. GOLD is the best trade type — safe haven during regime transitions
 6. Breakeven stops trigger too early — widen to 5% or add minimum hold period
 7. BTC HODL was -35.26% — regime filter avoided the crash entirely
+
+---
+
+## GROK RESEARCHER — Strategy Analysis (no new engine run)
+**Date:** 2026-09-16
+**Author:** Researcher (Grok Bot)
+**Source:** `bba-results/round3-hl-full-2026-09-16.json` (official Round 3)
+
+### Findings (from all 15 official fills)
+1. **BREAKEVEN_STOP** = largest failure bucket (5 trades, **−$183**, 0% WR) — stop set to avg entry at confirm (+3% gain).
+2. **BELOW_MA50** = second (3 trades, **−$150**, 0% WR).
+3. **Costs** $79.90 (54% of gross); **funding $58.82** dominates fees+slip.
+4. **GOLD +$113 / NVDA +$88 / TSLA −$132**; **0 jugular** stages in R3 (11 confirm / 4 probe).
+5. Brief leak: **TRANSITION confirm** exists (TSLA) — brief says probe-only.
+
+### Artifacts pushed
+- `grok-results/2026-09-16-researcher-strategy-analysis.md`
+- `grok-results/2026-09-16-researcher-strategy-analysis.json`
+
+### Round 4 pick
+Prefer isolated test **A** (BE delay +1.5R or bar 8), then **D** (funding flatten). Shield: DD>20% or >25 trades/yr. Paper only; 15 trades/yr is the feature.
+

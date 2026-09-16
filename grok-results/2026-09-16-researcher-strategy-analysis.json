@@ -1,0 +1,72 @@
+{
+  "author": "Researcher",
+  "date_boise": "2026-09-16",
+  "source": "bba-results/round3-hl-full-2026-09-16.json",
+  "sample": {
+    "n_trades": 15,
+    "note": "full official R3 sample; not 100"
+  },
+  "headline": {
+    "return_pct": 4.33,
+    "max_dd_pct": 12.65,
+    "sharpe": 0.415,
+    "win_rate_pct": 33.33,
+    "n_trades": 15,
+    "costs_usd": 79.9,
+    "costs_pct_of_gross": 54,
+    "btc_hodl_pct": -35.26
+  },
+  "failure_causes": [
+    {
+      "rank": 1,
+      "cause": "Premature BREAKEVEN_STOP",
+      "n": 5,
+      "net_usd": -183.16,
+      "win_rate": 0
+    },
+    {
+      "rank": 2,
+      "cause": "BELOW_MA50 after confirm",
+      "n": 3,
+      "net_usd": -149.85,
+      "win_rate": 0
+    },
+    {
+      "rank": 3,
+      "cause": "Cost drag (funding-dominated)",
+      "costs_usd": 79.9,
+      "funding_usd": 58.82,
+      "pct_of_gross": 54
+    }
+  ],
+  "biases": [
+    "stop_impatience",
+    "confirm_heavy_risk",
+    "transition_confirm_brief_leak",
+    "tsla_serial_loser_no_memory",
+    "funding_blindness",
+    "zero_jugular_stages"
+  ],
+  "vs_baseline": {
+    "max_dd_under_20": true,
+    "return_positive": true,
+    "beat_btc": true,
+    "cost_drag_ok": false,
+    "sharpe_usable": false,
+    "brief_transition_probe_only": false
+  },
+  "round4_pick": "A",
+  "round4_order_if_scarce": [
+    "A",
+    "D",
+    "C",
+    "B"
+  ],
+  "symbol_net_usd": {
+    "GOLD": 113.47,
+    "NVDA": 88.49,
+    "BTC": -0.58,
+    "TSLA": -132.14
+  },
+  "clone_ok": true
+}
