@@ -3,7 +3,8 @@
     "description": "Big Brain Ape \u2014 Backtest Parameter History. Tracks every parameter combination tested and its result so we never test the same thing twice.",
     "last_updated": "2026-09-16",
     "total_rounds": 4,
-    "note": "Round 4 uses isolated subtests A\u2013D; round number 4 shared across subtests."
+    "note": "Round 4 uses isolated subtests A\u2013D; round number 4 shared across subtests.",
+    "pending_archive": "round4_C_chop_filter.json"
   },
   "rounds": [
     {
@@ -329,9 +330,10 @@
     "R4-R1 TRANSITION probe-only \u2192 FAIL vs R3 (3.95%/DD12.80%/Sharpe0.386/n=16); shield pass"
   ],
   "next_to_test": [
-    "Boss picking next (A, D, R1 all rejects; keep R3 baseline)",
-    "Closed-+1R BE still shelved",
-    "Remaining official isolated: R4-B entry tighten; R4-C chop ATR/EMA",
-    "Do NOT ship R4-A, R4-D, or R4-R1; no blending"
+    "R4-C chop filter (ATR%/EMA-gap) \u2014 CoS locked next; archive when grok-results/round4_C_chop_filter.json lands",
+    "Must not lose return vs R3; same Shield (DD>20% or >25 trades)",
+    "If C fails: park and ship R3",
+    "R4-B entry tighten still remaining; closed-+1R still shelved",
+    "Do NOT ship A/D/R1; no blending"
   ]
 }
