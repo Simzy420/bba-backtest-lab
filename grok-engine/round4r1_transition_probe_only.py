@@ -544,7 +544,7 @@ def run_backtest(all_data: dict, regime_df: pd.DataFrame, transition_probe_only:
                             "phase": "confirm",
                             "current_regime": regime,
                             "regime_at_entry": pos.regime_at_entry,
-                            "gain_pct": round(gain_pct, 2),
+                            "gain_pct": float(round(gain_pct, 2)),
                             "close": round(float(r["close"]), 4),
                         })
                         print(f"  [{date.date()}] CONFIRM add {pos.symbol} @ {r['close']:.2f} (+{gain_pct:.1f}%, regime={regime}, entry_regime={pos.regime_at_entry})")
@@ -581,7 +581,7 @@ def run_backtest(all_data: dict, regime_df: pd.DataFrame, transition_probe_only:
                                 "phase": "jugular",
                                 "current_regime": regime,
                                 "regime_at_entry": pos.regime_at_entry,
-                                "gain_pct": round(gain_pct, 2),
+                                "gain_pct": float(round(gain_pct, 2)),
                                 "close": round(float(r["close"]), 4),
                             })
                             print(f"  [{date.date()}] JUGULAR add {pos.symbol} @ {r['close']:.2f} (+{gain_pct:.1f}%, regime={regime}, entry_regime={pos.regime_at_entry})")
@@ -810,6 +810,7 @@ def write_round4_artifacts(raw_results, skipped_pyramid_adds, executed_pyramid_a
     pass_vs_round3 = bool(new_m["total_return_pct"] >= r3_m["total_return_pct"])
 
     phase_mix = dict(Counter(t["phase"] for t in trades))
+    phase_txt = ", ".join(f"{k} {v}" for k, v in sorted(phase_mix.items()))
     exit_reason_counts = dict(Counter(t["exit_reason"] for t in trades))
     transition_trades = [t for t in trades if t.get("regime_at_entry") == "TRANSITION"]
     transition_confirms = [
@@ -833,7 +834,7 @@ def write_round4_artifacts(raw_results, skipped_pyramid_adds, executed_pyramid_a
         a for a in executed_pyramid_adds
         if a.get("regime_at_entry") == "TRANSITION"
     ]
-    control_identical = (
+    control_identical = bool(
         control_metrics.get("total_return_pct") == new_m["total_return_pct"]
         and control_metrics.get("num_trades") == new_m["num_trades"]
         and control_metrics.get("total_net_pnl") == new_m["total_net_pnl"]
@@ -861,10 +862,10 @@ def write_round4_artifacts(raw_results, skipped_pyramid_adds, executed_pyramid_a
         )
         pass_bits.append(f"TRANSITION confirm/jugular bleed gone (R3 had: {bleed})")
     elif transition_confirms:
-        pass_bits.append(
-            f"TRANSITION confirm/jugular still present: "
-            f"{[(t['symbol'], t['entry_date'], t['phase']) for t in transition_confirms]}"
+        leftover = ", ".join(
+            f"{t['symbol']} {t['entry_date']} {t['phase']}" for t in transition_confirms
         )
+        pass_bits.append(f"TRANSITION confirm/jugular still present: {leftover}")
     pass_reason = "; ".join(pass_bits)
 
     generated_at = datetime.now(timezone.utc).isoformat()
@@ -950,7 +951,7 @@ def write_round4_artifacts(raw_results, skipped_pyramid_adds, executed_pyramid_a
             ),
             "metrics": control_metrics,
             "num_trades": control_metrics.get("num_trades"),
-            "identical_to_r1": control_identical,
+            "identical_to_r1": bool(control_identical),
             "deltas_r1_minus_control": {
                 "total_return_pct": _round_delta(new_m["total_return_pct"], control_metrics.get("total_return_pct", 0)),
                 "max_drawdown_pct": _round_delta(new_m["max_drawdown_pct"], control_metrics.get("max_drawdown_pct", 0)),
@@ -1007,13 +1008,20 @@ def write_round4_artifacts(raw_results, skipped_pyramid_adds, executed_pyramid_a
         if summary["transition_probe_stats"]["transition_confirm_bleed_gone"]
         else "TRANSITION confirm/jugular still present (current-regime gate allows promote once RISK-ON)."
     )
-    tsla_promo = [
-        a for a in transition_origin_promotions if a.get("symbol") == "TSLA"
-    ]
+    promo_txt = (
+        "; ".join(
+            f"{a['date']} {a['symbol']} {a['phase']} current={a['current_regime']} "
+            f"entry={a['regime_at_entry']} +{float(a['gain_pct'])}%"
+            for a in transition_origin_promotions
+        )
+        if transition_origin_promotions
+        else "none"
+    )
+    tsla_promo = [a for a in transition_origin_promotions if a.get("symbol") == "TSLA"]
     tsla_note = (
         "; ".join(
             f"{a['symbol']} {a['phase']} on {a['date']} while current_regime={a['current_regime']} "
-            f"(regime_at_entry={a['regime_at_entry']}, +{a['gain_pct']}%)"
+            f"(regime_at_entry={a['regime_at_entry']}, +{float(a['gain_pct'])}%)"
             for a in tsla_promo
         )
         if tsla_promo
@@ -1066,10 +1074,10 @@ Same-session official control (knob OFF, identical bars): return {control_metric
 
 Engine output only — no invented fills. Raw: `grok-results/round4_R1_transition_probe_only_raw.json`. Window {window['benchmark_start']} → {window['benchmark_end']}.
 
-- Phase mix R1: {phase_mix} (published R3 was 11 confirm / 4 probe / 0 jugular).
+- Phase mix R1: {phase_txt} (published R3 was 11 confirm / 4 probe / 0 jugular).
 - Skipped pyramid add events (would-have-fired during TRANSITION): {len(skipped_pyramid_adds)}.
 - Unique blocked promotions: {unique_skips if unique_skips else 'none'}.
-- Executed TRANSITION-origin promotions: {transition_origin_promotions if transition_origin_promotions else 'none'}.
+- Executed TRANSITION-origin promotions: {promo_txt}.
 - TSLA leak check: {tsla_note}.
 - TRANSITION-entry trades remaining at confirm/jugular: {len(transition_confirms)} (published R3 had {len(r3_transition_confirms)}).
 - {bleed_note}
