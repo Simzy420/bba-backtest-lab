@@ -841,17 +841,17 @@ def write_round4c_summary(metrics, trades, benchmark, regime_counts, chop_skips)
     r3_dd = r3m.get("max_drawdown_pct", 0)
     sharpe = metrics.get("sharpe_ratio", 0)
 
-    shield_dd = dd > 20
-    shield_n = n_trades > 25
-    shield_n_yr = trades_per_year > 25 if window_years else False
+    shield_dd = bool(dd > 20)
+    shield_n = bool(n_trades > 25)
+    shield_n_yr = bool(trades_per_year > 25) if window_years else False
     shield_veto = bool(shield_dd or shield_n)
     pass_vs = bool(ret >= r3_ret)
 
     if pass_vs:
-        pass_reason = f"PASS — return {ret}% >= R3 {r3_ret}%"
+        pass_reason = f"return {ret}% >= R3 {r3_ret}%"
     else:
         pass_reason = (
-            f"FAIL — return {ret}% vs R3 {r3_ret}%, DD {dd}% vs {r3_dd}%, "
+            f"return {ret}% vs R3 {r3_ret}%, DD {dd}% vs {r3_dd}%, "
             f"Sharpe {sharpe} vs {r3m.get('sharpe_ratio')}"
         )
 
@@ -993,8 +993,8 @@ def write_round4c_markdown(summary: dict):
         "|------|--------|",
         f"| vs Round 3 improvement | **{vs}** — {summary['pass_vs_round3_reason']} |",
         (
-            f"| Shield (DD≤20% and ≤25 trades) | **{sh}** — DD {shield['max_drawdown_pct']}% , "
-            f"trades {shield['num_trades']} ( {shield['trades_per_year']}/yr ) "
+            f"| Shield (DD≤20% and ≤25 trades) | **{sh}** — DD {shield['max_drawdown_pct']}%, "
+            f"trades {shield['num_trades']} ({shield['trades_per_year']}/yr) "
             f"→ `shield_veto={str(summary['shield_veto']).lower()}` |"
         ),
         "",

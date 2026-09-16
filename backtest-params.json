@@ -1,9 +1,9 @@
 {
   "metadata": {
-    "description": "Big Brain Ape \u2014 Backtest Parameter History. Tracks every parameter combination tested and its result so we never test the same thing twice.",
+    "description": "Big Brain Ape — Backtest Parameter History. Tracks every parameter combination tested and its result so we never test the same thing twice.",
     "last_updated": "2026-09-16",
     "total_rounds": 4,
-    "note": "Round 4 uses isolated subtests A\u2013D; round number 4 shared across subtests."
+    "note": "Round 4 uses isolated subtests A–D; round number 4 shared across subtests."
   },
   "rounds": [
     {
@@ -53,7 +53,7 @@
         "sharpe_ratio": null,
         "profit_factor": null
       },
-      "verdict": "FAIL \u2014 too many trades, no macro filter, 180% exposure",
+      "verdict": "FAIL — too many trades, no macro filter, 180% exposure",
       "key_lesson": "Regime filter is mandatory. Pure technical indicators get whipsawed."
     },
     {
@@ -162,7 +162,7 @@
         "worst_trade_pnl": -57.65,
         "avg_hold_days": 15.8
       },
-      "verdict": "PASS \u2014 profitable, controlled DD, outperformed BTC by 39.59%",
+      "verdict": "PASS — profitable, controlled DD, outperformed BTC by 39.59%",
       "key_lesson": "Real costs ate 54% of gross. Breakeven stops too early. GOLD is best trade. Need to reduce trade count and widen stops."
     },
     {
@@ -198,7 +198,7 @@
         "veto": false,
         "note": "DD 19.34% <= 20, trades 15 <= 25"
       },
-      "verdict": "FAIL \u2014 vs Round 3: worse return (4.02% vs 4.33%) and higher DD (19.34% vs 12.65%); Sharpe 0.342 vs 0.415. Shield PASS but do not ship.",
+      "verdict": "FAIL — vs Round 3: worse return (4.02% vs 4.33%) and higher DD (19.34% vs 12.65%); Sharpe 0.342 vs 0.415. Shield PASS but do not ship.",
       "key_lesson": "Calendar BE delay alone did not help; lifted DD toward shield line without improving WR or return. Reject knob A.",
       "artifacts": {
         "summary": "grok-results/round4_A_be_stop_delay.json",
@@ -217,9 +217,9 @@
         "baseline": "round3-hl-full",
         "knob": "FUNDING_FLATTEN",
         "knob_detail": {
-          "description": "After a position has been open \u22652 calendar days (daily bars; \u226548h), if cumulative funding paid is adverse (longs always pay the official HL 8h rate in this engine) AND unrealized gain vs current avg entry is still < +1R, flatten at close for FUNDING_FLATTEN. If unrealized \u2265 +1R, keep holding under existing MA50 / RSI / BE / time / regime / DD exits. BE stop logic, entries, pyramids, universe, cost rates, max concurrent, and DD defense unchanged.",
+          "description": "After a position has been open ≥2 calendar days (daily bars; ≥48h), if cumulative funding paid is adverse (longs always pay the official HL 8h rate in this engine) AND unrealized gain vs current avg entry is still < +1R, flatten at close for FUNDING_FLATTEN. If unrealized ≥ +1R, keep holding under existing MA50 / RSI / BE / time / regime / DD exits. BE stop logic, entries, pyramids, universe, cost rates, max concurrent, and DD defense unchanged.",
           "min_hold_days": 2,
-          "one_r_definition": "Engine has no explicit protective-stop R unit (swing-low risk is computed at entry for logging only and is not a stop). 1R is defined as 3.0% of current avg entry \u2014 the same gain threshold already used to promote probe\u2192confirm in bba-engine/hl_backtest.py. Unrealized is price gain vs avg entry, not net of funding.",
+          "one_r_definition": "Engine has no explicit protective-stop R unit (swing-low risk is computed at entry for logging only and is not a stop). 1R is defined as 3.0% of current avg entry — the same gain threshold already used to promote probe→confirm in bba-engine/hl_backtest.py. Unrealized is price gain vs avg entry, not net of funding.",
           "one_r_pct": 3.0,
           "adverse_funding_rule": "funding_so_far = notional * rate_per_8h * hold_days * 3; adverse if funding_so_far > 0",
           "exit_priority": "Existing exits fire first on the same bar (BELOW_MA50, RSI_OVERBOUGHT, TIME_STOP, BREAKEVEN_STOP). FUNDING_FLATTEN is an additional 5th check only.",
@@ -257,9 +257,9 @@
         "veto": true,
         "veto_reason": "num_trades 26 > 25",
         "dd_ok": true,
-        "note": "DD 12.04% <= 20, trades 26 > 25 \u2192 shield_veto"
+        "note": "DD 12.04% <= 20, trades 26 > 25 → shield_veto"
       },
-      "verdict": "FAIL \u2014 vs Round 3: return 4.14% vs 4.33%, Sharpe 0.384 vs 0.415; Shield VETO (26 trades > 25). Cost/gross improved ~54%\u219232% but volume exploded. Do not ship.",
+      "verdict": "FAIL — vs Round 3: return 4.14% vs 4.33%, Sharpe 0.384 vs 0.415; Shield VETO (26 trades > 25). Cost/gross improved ~54%→32% but volume exploded. Do not ship.",
       "key_lesson": "Funding flatten cut cost/gross but churned exits (FUNDING_FLATTEN dominates). Trade-count shield veto. Reject knob D. A and D both rejects.",
       "artifacts": {
         "summary": "grok-results/round4_D_funding_flatten.json",
@@ -309,7 +309,7 @@
         "veto": false,
         "note": "DD 12.8% / trades 16"
       },
-      "verdict": "FAIL \u2014 vs Round 3: return 3.95% vs 4.33%, DD 12.80% vs 12.65%, Sharpe 0.386 vs 0.415, trades 16, WR ~31%. Shield PASS. Do not ship.",
+      "verdict": "FAIL — vs Round 3: return 3.95% vs 4.33%, DD 12.80% vs 12.65%, Sharpe 0.386 vs 0.415, trades 16, WR ~31%. Shield PASS. Do not ship.",
       "key_lesson": "TRANSITION probe-only alone did not beat R3. A, D, and R1 all rejects. Keep R3 baseline.",
       "artifacts": {
         "summary": "grok-results/round4_R1_transition_probe_only.json",
@@ -318,20 +318,82 @@
         "strategy_logs": "logs/days/2026-09-16/backtest/round4_R1_transition_probe_only.json"
       },
       "invented_fills": false
+    },
+    {
+      "round": 4,
+      "subtest": "C",
+      "date": "2026-09-16",
+      "label": "chop-filter-C",
+      "params": {
+        "baseline": "round3-hl-full",
+        "knob": "CHOP_FILTER",
+        "knob_detail": {
+          "description": "Skip NEW entries/new probes when EITHER daily ATR% is below its 20-bar median on that symbol OR |EMA20-EMA50|/close < 0.4%. Existing positions are not force-exited for chop. BE stops, pyramids, regime, sizes, costs, universe, DD circuit unchanged.",
+          "atr_pct_definition": "ATR(14 Wilder) / close * 100 (percent units)",
+          "atr_median_bars": 20,
+          "ema_gap_frac": 0.004,
+          "timeframe": "daily",
+          "applies_to": "new_entries_new_probes_only",
+          "engine_file": "grok-engine/round4c_chop_filter.py",
+          "base_engine": "bba-engine/hl_backtest.py"
+        },
+        "isolated": true,
+        "blended": false,
+        "engine_file": "grok-engine/round4c_chop_filter.py",
+        "base_engine": "bba-engine/hl_backtest.py",
+        "pr": "https://github.com/Simzy420/bba-backtest-lab/pull/4"
+      },
+      "results": {
+        "total_return_pct": 14.9,
+        "num_trades": 9,
+        "win_rate_pct": 44.44,
+        "max_drawdown_pct": 8.46,
+        "sharpe_ratio": 1.564,
+        "profit_factor": 2.247,
+        "total_costs_usd": 55.53,
+        "gross_pnl_usd": 300.26,
+        "net_pnl_usd": 244.76,
+        "cost_to_gross_pct": 18.49,
+        "avg_hold_days": 18.2,
+        "final_equity": 1910.71,
+        "chop_skips": 15,
+        "exit_reason_counts": {
+          "RSI_OVERBOUGHT": 3,
+          "BREAKEVEN_STOP": 3,
+          "TIME_STOP": 1,
+          "BELOW_MA50": 2
+        }
+      },
+      "shield": {
+        "dd_limit_pct": 20,
+        "trades_limit": 25,
+        "veto": false,
+        "note": "DD 8.46% <= 20, trades 9 <= 25"
+      },
+      "verdict": "PASS vs Round 3 — return 14.90% vs 4.33%, DD 8.46% vs 12.65%, Sharpe 1.564 vs 0.415, n=9, WR 44.44%, cost/gross 18.49% vs 53.58%. Shield PASS. Hypothesis (Sharpe>=0.55, cost% down, MDD <= R3+2pp) all MET. Isolated C only; do not blend A/D/R1.",
+      "key_lesson": "Daily chop filter blocked 15 would-be R3 entries (mostly ATR% below 20-bar median), including the Dec TSLA losers and Aug NVDA cluster. Trade count fell 15->9. Paper only; Boss decides whether to ship vs keeping R3 cadence of 15 RT/yr.",
+      "artifacts": {
+        "summary": "grok-results/round4_C_chop_filter.json",
+        "raw": "grok-results/round4_C_chop_filter_raw.json",
+        "writeup": "grok-results/2026-09-16-round4c-chop-filter.md",
+        "pr": "https://github.com/Simzy420/bba-backtest-lab/pull/4"
+      },
+      "invented_fills": false
     }
   ],
   "tested_combinations": [
-    "no_regime_no_costs_3x_3pos_20pct \u2192 FAIL",
-    "regime_no_costs_2x_2pos_25pct \u2192 PASS (DD too high)",
-    "regime_costs_2-3x_2pos_pyramid \u2192 PASS (DD fixed, costs high)",
-    "R4-A BE_STOP_DELAY=+3d calendar vs R3 \u2192 FAIL (ret\u2193 DD\u2191); shield pass",
-    "R4-D FUNDING_FLATTEN 48h unless \u2265+1R \u2192 FAIL vs R3 + Shield VETO (26 trades); cost/gross ~32%",
-    "R4-R1 TRANSITION probe-only \u2192 FAIL vs R3 (3.95%/DD12.80%/Sharpe0.386/n=16); shield pass"
+    "no_regime_no_costs_3x_3pos_20pct → FAIL",
+    "regime_no_costs_2x_2pos_25pct → PASS (DD too high)",
+    "regime_costs_2-3x_2pos_pyramid → PASS (DD fixed, costs high)",
+    "R4-A BE_STOP_DELAY=+3d calendar vs R3 → FAIL (ret↓ DD↑); shield pass",
+    "R4-D FUNDING_FLATTEN 48h unless ≥+1R → FAIL vs R3 + Shield VETO (26 trades); cost/gross ~32%",
+    "R4-R1 TRANSITION probe-only → FAIL vs R3 (3.95%/DD12.80%/Sharpe0.386/n=16); shield pass",
+    "R4-C CHOP_FILTER ATR%<20d median OR EMA gap<0.4% → PASS vs R3 (14.90%/DD8.46%/Sharpe1.564/n=9); shield pass"
   ],
   "next_to_test": [
-    "Boss picking next (A, D, R1 all rejects; keep R3 baseline)",
-    "Closed-+1R BE still shelved",
-    "Remaining official isolated: R4-B entry tighten; R4-C chop ATR/EMA",
-    "Do NOT ship R4-A, R4-D, or R4-R1; no blending"
+    "Boss: R4-C PASS vs R3 on this isolated paper run; decide ship vs keep R3 15 RT/yr cadence",
+    "Remaining official isolated: R4-B entry tighten",
+    "Do NOT ship R4-A, R4-D, or R4-R1; no blending",
+    "Closed-+1R BE still shelved"
   ]
 }

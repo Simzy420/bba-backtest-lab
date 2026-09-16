@@ -145,10 +145,39 @@
 
 ---
 
-## ROUND 4 — [PENDING]
-**Date:** TBD
-**Engine:** TBD
-**What to test:** See Round 3 "What to Test Next" — pick top 2-3 parameters to change
+## ROUND 4 — Isolated one-knob tests (A / D / R1 / C)
+**Date:** 2026-09-16
+**Engine:** forks of `bba-engine/hl_backtest.py` under `grok-engine/`
+**Standing:** paper only · no blending · no invented fills
+**Baseline:** official R3 +4.33% / DD 12.65% / 15 trades / WR 33.33% / Sharpe 0.415
+
+### Prior rejects (do not ship)
+| Subtest | Knob | Return | DD | n | Sharpe | Verdict |
+|---------|------|--------|----|---|--------|---------|
+| A | BE_STOP_DELAY +3d | 4.02% | 19.34% | 15 | 0.342 | FAIL vs R3; shield pass |
+| D | FUNDING_FLATTEN 48h unless ≥+1R | 4.14% | 12.04% | 26 | 0.384 | FAIL vs R3; **shield veto** (n>25) |
+| R1 | TRANSITION probe-only | 3.95% | 12.80% | 16 | 0.386 | FAIL vs R3; shield pass |
+
+### Round 4C — CHOP FILTER (this run)
+**Engine:** `grok-engine/round4c_chop_filter.py`  
+**Knob:** skip **new** entries if daily ATR% < 20-bar median **OR** |EMA20−EMA50|/close < 0.4%. Existing exits unchanged.
+
+| Metric | Round 3 | Round 4C |
+|--------|---------|----------|
+| Total return | +4.33% | **+14.90%** |
+| Max drawdown | 12.65% | **8.46%** |
+| Trades | 15 | 9 |
+| Win rate | 33.33% | 44.44% |
+| Sharpe | 0.415 | **1.564** |
+| Costs | $79.90 (53.58% of gross) | $55.53 (18.49% of gross) |
+| Net P&L | $69.24 | $244.76 |
+
+**Gates:** `pass_vs_round3=true` (return ≥ R3). Shield PASS (DD 8.46% ≤ 20, n=9 ≤ 25).  
+**Hypothesis:** Sharpe ≥0.55 **MET**; cost%↓ **MET**; MDD ≤ R3+2pp **MET**.  
+**Skips:** 15 candidate R3-style entries blocked (13 ATR%-below-median, 2 both).  
+**Artifacts:** `grok-results/round4_C_chop_filter.json`, `grok-results/2026-09-16-round4c-chop-filter.md`.
+
+Paper only. Boss decides whether to ship C vs keep R3's 15 RT/yr cadence. Do not blend A/D/R1.
 
 ---
 
@@ -159,6 +188,10 @@
 | 1 | -67% | N/A | 52 | 38% | N/A | None | 6mo |
 | 2 | +6.43% | 53.8% | 6 | 50% | 0.92 | None | 6mo |
 | 3 | +4.33% | 12.65% | 15 | 33% | 0.41 | $79.90 | 12mo |
+| 4A | +4.02% | 19.34% | 15 | 33% | 0.34 | $80.12 | 12mo |
+| 4D | +4.14% | 12.04% | 26 | 31% | 0.38 | $30.43 | 12mo |
+| 4R1 | +3.95% | 12.80% | 16 | 31% | 0.39 | $80.50 | 12mo |
+| 4C | **+14.90%** | **8.46%** | 9 | 44% | **1.56** | $55.53 | 12mo |
 
 ## KEY FINDINGS (Saved to Memory)
 1. Regime filter is the #1 component — went from -67% to +6.43% just by adding it
