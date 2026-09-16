@@ -314,8 +314,8 @@ def trade_pnl(pos, exit_price, hold_days):
 
 # ─────────────────────── Backtest Engine ───────────────────────
 
-def run_backtest(all_data: dict, regime_df: pd.DataFrame):
-    """Run the full strategy backtest. Returns trades list + equity curve."""
+def run_backtest(all_data: dict, regime_df: pd.DataFrame, transition_probe_only: bool = True):
+    """Run the full strategy backtest. Returns trades, equity, final, skips, executed adds."""
     # Prepare per-asset indicator dataframes
     asset_dfs = {}
     tradeable = ["BTC", "ETH", "SOL", "GOLD", "NVDA", "TSLA", "^GSPC"]
@@ -339,6 +339,7 @@ def run_backtest(all_data: dict, regime_df: pd.DataFrame):
     defensive_mode = False
     last_trade_date = {}  # symbol -> last entry date (cooldown)
     skipped_pyramid_adds = []  # R4-R1 diagnostics only (does not change fills)
+    executed_pyramid_adds = []  # confirm/jugular fills with current_regime (audit)
 
     for i, date in enumerate(dates):
         # Get regime for this date
@@ -515,7 +516,7 @@ def run_backtest(all_data: dict, regime_df: pd.DataFrame):
                 if (pos.phase == "probe" and gain_pct >= 3.0
                         and not pd.isna(r["rsi"]) and 55 <= r["rsi"] <= 70
                         and not pd.isna(r["ma20"]) and r["close"] > r["ma20"]):
-                    if TRANSITION_PROBE_ONLY and regime == "TRANSITION":
+                    if transition_probe_only and regime == "TRANSITION":
                         skipped_pyramid_adds.append({
                             "date": str(date.date()),
                             "symbol": pos.symbol,
@@ -537,12 +538,21 @@ def run_backtest(all_data: dict, regime_df: pd.DataFrame):
                         pos.stop_price = avg_entry  # move stop to breakeven
                         cash -= add_capital
                         pos.added = True
-                        print(f"  [{date.date()}] CONFIRM add {pos.symbol} @ {r['close']:.2f} (+{gain_pct:.1f}%)")
+                        executed_pyramid_adds.append({
+                            "date": str(date.date()),
+                            "symbol": pos.symbol,
+                            "phase": "confirm",
+                            "current_regime": regime,
+                            "regime_at_entry": pos.regime_at_entry,
+                            "gain_pct": round(gain_pct, 2),
+                            "close": round(float(r["close"]), 4),
+                        })
+                        print(f"  [{date.date()}] CONFIRM add {pos.symbol} @ {r['close']:.2f} (+{gain_pct:.1f}%, regime={regime}, entry_regime={pos.regime_at_entry})")
                 # Jugular: up 8%+ from entry, momentum accelerating (RSI 60-72), MA50 up
                 elif (pos.phase == "confirm" and gain_pct >= 8.0
                       and not pd.isna(r["rsi"]) and 60 <= r["rsi"] <= 72
                       and not pd.isna(r["ma50"]) and bool(r["ma50_slope_up"])):
-                    if TRANSITION_PROBE_ONLY and regime == "TRANSITION":
+                    if transition_probe_only and regime == "TRANSITION":
                         skipped_pyramid_adds.append({
                             "date": str(date.date()),
                             "symbol": pos.symbol,
@@ -565,7 +575,16 @@ def run_backtest(all_data: dict, regime_df: pd.DataFrame):
                             pos.stop_price = avg_entry * 1.02  # trail up
                             cash -= add_capital
                             pos.added = True
-                            print(f"  [{date.date()}] JUGULAR add {pos.symbol} @ {r['close']:.2f} (+{gain_pct:.1f}%)")
+                            executed_pyramid_adds.append({
+                                "date": str(date.date()),
+                                "symbol": pos.symbol,
+                                "phase": "jugular",
+                                "current_regime": regime,
+                                "regime_at_entry": pos.regime_at_entry,
+                                "gain_pct": round(gain_pct, 2),
+                                "close": round(float(r["close"]), 4),
+                            })
+                            print(f"  [{date.date()}] JUGULAR add {pos.symbol} @ {r['close']:.2f} (+{gain_pct:.1f}%, regime={regime}, entry_regime={pos.regime_at_entry})")
 
         # Entry scans (only if not defensive and regime allows)
         if not defensive_mode and regime in ("RISK-ON", "TRANSITION") and len(positions) < MAX_CONCURRENT:
@@ -675,7 +694,7 @@ def run_backtest(all_data: dict, regime_df: pd.DataFrame):
     positions = []
 
     final_equity = cash
-    return closed_trades, equity_curve, final_equity, skipped_pyramid_adds
+    return closed_trades, equity_curve, final_equity, skipped_pyramid_adds, executed_pyramid_adds
 
 
 # ─────────────────────── Metrics & Benchmark ───────────────────────
@@ -763,7 +782,7 @@ def _round_delta(a, b, ndigits=2):
     return round(a - b, ndigits)
 
 
-def write_round4_artifacts(raw_results, skipped_pyramid_adds):
+def write_round4_artifacts(raw_results, skipped_pyramid_adds, executed_pyramid_adds, control_metrics, control_trades):
     """Write grok-results comparison JSON + short markdown from engine output only."""
     Path(OUTPUT_JSON).parent.mkdir(parents=True, exist_ok=True)
     with open(R3_BASELINE_JSON) as f:
@@ -774,10 +793,10 @@ def write_round4_artifacts(raw_results, skipped_pyramid_adds):
     benchmark = raw_results["benchmark_btc_hodl"]
     eq = raw_results["equity_curve"]
 
-    max_dd = new_m["max_drawdown_pct"]
-    n_trades = new_m["num_trades"]
-    shield_dd = max_dd > 20.0
-    shield_n = n_trades > 25
+    max_dd = float(new_m["max_drawdown_pct"])
+    n_trades = int(new_m["num_trades"])
+    shield_dd = bool(max_dd > 20.0)
+    shield_n = bool(n_trades > 25)
     shield_veto = bool(shield_dd or shield_n)
 
     ret_delta = _round_delta(new_m["total_return_pct"], r3_m["total_return_pct"])
@@ -809,6 +828,17 @@ def write_round4_artifacts(raw_results, skipped_pyramid_adds):
             continue
         seen.add(key)
         unique_skips.append(s)
+
+    transition_origin_promotions = [
+        a for a in executed_pyramid_adds
+        if a.get("regime_at_entry") == "TRANSITION"
+    ]
+    control_identical = (
+        control_metrics.get("total_return_pct") == new_m["total_return_pct"]
+        and control_metrics.get("num_trades") == new_m["num_trades"]
+        and control_metrics.get("total_net_pnl") == new_m["total_net_pnl"]
+        and control_metrics.get("max_drawdown_pct") == new_m["max_drawdown_pct"]
+    )
 
     pass_bits = []
     if pass_vs_round3:
@@ -843,7 +873,11 @@ def write_round4_artifacts(raw_results, skipped_pyramid_adds):
         "benchmark_end": benchmark.get("end_date"),
         "equity_start": eq[0]["date"] if eq else None,
         "equity_end": eq[-1]["date"] if eq else None,
-        "note": "Same ~365d CoinGecko/yfinance fetch + HL cost rates as official R3 engine",
+        "note": (
+            "Same ~365d CoinGecko/yfinance fetch + HL cost rates as official R3 engine. "
+            "Last bar is live for the run date; published R3 used an earlier Sep-16 GOLD print. "
+            "Knob effect is measured vs same-session official control on this snapshot."
+        ),
     }
 
     summary = {
@@ -891,6 +925,8 @@ def write_round4_artifacts(raw_results, skipped_pyramid_adds):
             "skipped_pyramid_add_events": skipped_pyramid_adds,
             "skipped_pyramid_add_event_count": len(skipped_pyramid_adds),
             "unique_blocked_promotions": unique_skips,
+            "executed_pyramid_adds": executed_pyramid_adds,
+            "transition_origin_promotions": transition_origin_promotions,
             "transition_entry_trades": len(transition_trades),
             "transition_entry_confirm_or_jugular": len(transition_confirms),
             "r3_transition_confirm_or_jugular": [
@@ -906,6 +942,22 @@ def write_round4_artifacts(raw_results, skipped_pyramid_adds):
             "transition_confirm_bleed_gone": (
                 len(r3_transition_confirms) > 0 and len(transition_confirms) == 0
             ),
+        },
+        "same_session_control": {
+            "description": (
+                "Official pyramid gate (TRANSITION confirms allowed) run on the identical "
+                "fetched bars as R1, so last-bar drift vs published R3 is not attributed to the knob."
+            ),
+            "metrics": control_metrics,
+            "num_trades": control_metrics.get("num_trades"),
+            "identical_to_r1": control_identical,
+            "deltas_r1_minus_control": {
+                "total_return_pct": _round_delta(new_m["total_return_pct"], control_metrics.get("total_return_pct", 0)),
+                "max_drawdown_pct": _round_delta(new_m["max_drawdown_pct"], control_metrics.get("max_drawdown_pct", 0)),
+                "sharpe_ratio": round(new_m["sharpe_ratio"] - control_metrics.get("sharpe_ratio", 0), 3),
+                "num_trades": n_trades - int(control_metrics.get("num_trades", 0)),
+                "total_net_pnl": _round_delta(new_m["total_net_pnl"], control_metrics.get("total_net_pnl", 0)),
+            },
         },
         "shield_veto": shield_veto,
         "shield_rules": {
@@ -955,6 +1007,26 @@ def write_round4_artifacts(raw_results, skipped_pyramid_adds):
         if summary["transition_probe_stats"]["transition_confirm_bleed_gone"]
         else "TRANSITION confirm/jugular still present (current-regime gate allows promote once RISK-ON)."
     )
+    tsla_promo = [
+        a for a in transition_origin_promotions if a.get("symbol") == "TSLA"
+    ]
+    tsla_note = (
+        "; ".join(
+            f"{a['symbol']} {a['phase']} on {a['date']} while current_regime={a['current_regime']} "
+            f"(regime_at_entry={a['regime_at_entry']}, +{a['gain_pct']}%)"
+            for a in tsla_promo
+        )
+        if tsla_promo
+        else "no TRANSITION-origin TSLA promotion in this run"
+    )
+    control_note = (
+        "Same-session official control is identical to R1 — the knob did not change any fills on this snapshot."
+        if control_identical
+        else (
+            f"Same-session official control return {control_metrics.get('total_return_pct')}% vs R1 "
+            f"{new_m['total_return_pct']}% (knob changed fills)."
+        )
+    )
 
     md = f"""# Round 4 R1 — TRANSITION probe-only
 
@@ -970,14 +1042,14 @@ def write_round4_artifacts(raw_results, skipped_pyramid_adds):
 
 | Gate | Result |
 |------|--------|
-| vs Round 3 improvement | **{vs_label}** — return {new_m['total_return_pct']}% vs {r3_m['total_return_pct']}%. `pass_vs_round3` is true only if return ≥ R3. {bleed_note} |
+| vs Round 3 improvement | **{vs_label}** — return {new_m['total_return_pct']}% vs published R3 {r3_m['total_return_pct']}%. `pass_vs_round3` is true only if return ≥ R3. {bleed_note} |
 | Shield (DD≤20% and ≤25 trades) | **{shield_label}** — DD {max_dd}% {'>' if shield_dd else '≤'} 20, trades {n_trades} {'>' if shield_n else '≤'} 25 → `shield_veto={str(shield_veto).lower()}` |
-| Researcher kill (return drop >3pp AND MDD improvement <1pp) | **{kill_label}** — return drop {return_drop_pp}pp, MDD improvement {mdd_improvement_pp}pp |
+| Researcher kill (return drop >3pp AND MDD improvement <1pp) | **{kill_label}** — return drop {return_drop_pp}pp vs published R3, MDD improvement {mdd_improvement_pp}pp |
 
 ## Metrics: Round 3 vs Round 4 R1
 
-| Metric | Round 3 | Round 4 R1 | Delta |
-|--------|---------|------------|-------|
+| Metric | Round 3 (published) | Round 4 R1 | Delta vs published R3 |
+|--------|---------------------|------------|-----------------------|
 | Final equity | ${r3_eq:,.2f} | ${n_eq:,.2f} | {summary['comparison_deltas']['final_equity']:+.2f} |
 | Total return % | {r3_m['total_return_pct']} | {new_m['total_return_pct']} | {ret_delta:+.2f} |
 | Max DD % | {r3_m['max_drawdown_pct']} | {new_m['max_drawdown_pct']} | {dd_delta:+.2f} |
@@ -988,15 +1060,22 @@ def write_round4_artifacts(raw_results, skipped_pyramid_adds):
 | Net P&L | ${r3_m['total_net_pnl']} | ${new_m['total_net_pnl']} | {summary['comparison_deltas']['total_net_pnl']:+.2f} |
 | Avg hold days | {r3_m['avg_hold_days']} | {new_m['avg_hold_days']} | {summary['comparison_deltas']['avg_hold_days']:+.1f} |
 
+Same-session official control (knob OFF, identical bars): return {control_metrics.get('total_return_pct')}%, DD {control_metrics.get('max_drawdown_pct')}%, n={control_metrics.get('num_trades')}, net ${control_metrics.get('total_net_pnl')}. {control_note}
+
 ## What the knob actually did
 
-Engine output only — no invented fills. Raw: `grok-results/round4_R1_transition_probe_only_raw.json`. Same ~365d window / assets / HL cost rates as R3 ({window['benchmark_start']} → {window['benchmark_end']}).
+Engine output only — no invented fills. Raw: `grok-results/round4_R1_transition_probe_only_raw.json`. Window {window['benchmark_start']} → {window['benchmark_end']}.
 
-- Phase mix R1: {phase_mix} (R3 was 11 confirm / 4 probe / 0 jugular).
+- Phase mix R1: {phase_mix} (published R3 was 11 confirm / 4 probe / 0 jugular).
 - Skipped pyramid add events (would-have-fired during TRANSITION): {len(skipped_pyramid_adds)}.
 - Unique blocked promotions: {unique_skips if unique_skips else 'none'}.
-- TRANSITION-entry trades remaining at confirm/jugular: {len(transition_confirms)} (R3 had {len(r3_transition_confirms)}).
+- Executed TRANSITION-origin promotions: {transition_origin_promotions if transition_origin_promotions else 'none'}.
+- TSLA leak check: {tsla_note}.
+- TRANSITION-entry trades remaining at confirm/jugular: {len(transition_confirms)} (published R3 had {len(r3_transition_confirms)}).
 - {bleed_note}
+- {control_note}
+
+Published-R3 deltas can include last-bar GOLD/crypto drift (live Sep-16 print vs the earlier R3 snapshot). Do not attribute those deltas to the knob unless they also appear vs same-session control.
 
 ## Notes
 
@@ -1036,13 +1115,25 @@ def main():
     regime_counts = regime_df["regime"].value_counts()
     print(f"  Regime distribution: {dict(regime_counts)}\n")
 
-    # 3. Run backtest
-    print("Running backtest...")
+    # 3. Same-session control (official gate) then R1 knob — identical bars
+    print("Running same-session CONTROL (official pyramid gate, knob OFF)...")
     print("-" * 80)
-    trades, equity_curve, final_equity, skipped_pyramid_adds = run_backtest(all_data, regime_df)
+    ctrl_trades, ctrl_eq, _, ctrl_skips, ctrl_adds = run_backtest(
+        all_data, regime_df, transition_probe_only=False
+    )
+    print("-" * 80)
+    control_metrics = compute_metrics(ctrl_trades, ctrl_eq, START_CAPITAL)
+    print(f"  Control complete. {len(ctrl_trades)} trades, return {control_metrics.get('total_return_pct')}%\n")
+
+    print("Running R4-R1 (TRANSITION probe-only, knob ON)...")
+    print("-" * 80)
+    trades, equity_curve, final_equity, skipped_pyramid_adds, executed_pyramid_adds = run_backtest(
+        all_data, regime_df, transition_probe_only=True
+    )
     print("-" * 80)
     print(f"  Backtest complete. {len(trades)} trades closed.")
-    print(f"  TRANSITION pyramid skips: {len(skipped_pyramid_adds)}\n")
+    print(f"  TRANSITION pyramid skips: {len(skipped_pyramid_adds)}")
+    print(f"  Executed pyramid adds: {len(executed_pyramid_adds)}\n")
 
     # 4. Metrics
     metrics = compute_metrics(trades, equity_curve, START_CAPITAL)
@@ -1123,6 +1214,8 @@ def main():
         "trades": trades,
         "equity_curve": equity_curve,
         "skipped_pyramid_adds": skipped_pyramid_adds,
+        "executed_pyramid_adds": executed_pyramid_adds,
+        "same_session_control_metrics": control_metrics,
         "knob": "TRANSITION_PROBE_ONLY",
         "generated_at": datetime.now(timezone.utc).isoformat(),
     }
@@ -1130,7 +1223,13 @@ def main():
     with open(OUTPUT_JSON, "w") as f:
         json.dump(results, f, indent=2, default=str)
     print(f"\nResults saved to {OUTPUT_JSON}")
-    write_round4_artifacts(results, skipped_pyramid_adds)
+    write_round4_artifacts(
+        results,
+        skipped_pyramid_adds,
+        executed_pyramid_adds,
+        control_metrics,
+        ctrl_trades,
+    )
     print("=" * 80)
 
 
