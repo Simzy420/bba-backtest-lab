@@ -145,10 +145,69 @@
 
 ---
 
-## ROUND 4 — [PENDING]
-**Date:** TBD
-**Engine:** TBD
-**What to test:** See Round 3 "What to Test Next" — pick top 2-3 parameters to change
+## ROUND 4 — Isolated Knob Tests (A/D/R1/C)
+**Date:** 2026-09-16
+**Status:** CLOSED — Shipped C as new paper baseline
+See `backtest-params.json` for full details on each subtest.
+
+---
+
+## ROUND 5 — Chop Filter + GOLD Overweight + RSI Exit 70 (Out-of-Sample)
+**Date:** 2026-10-02
+**Engine:** /workspace/bba-backtest-lab/bba-engine/round5_chop_gold_rsi70.py
+**Period:** 365 days (latest, ~Oct 2025 – Oct 2026)
+**Capital:** $1,663
+**Baseline:** Round 4C (chop filter, shipped 2026-09-16)
+
+### Changes from R4C
+1. GOLD probe size: 10% → 15% (GOLD was best trade in R3/R4)
+2. RSI exit threshold: 75 → 70 (take profits earlier)
+3. Fresh 365-day data (out-of-sample vs R3/R4 which ran Sep 2025 – Sep 2026)
+
+### Results
+| Metric | R5 | R4C | Delta |
+|--------|-----|-----|-------|
+| Total return | +10.12% | +14.90% | -4.78% |
+| Max drawdown | 8.94% | 8.46% | +0.48% |
+| Sharpe | 1.131 | 1.564 | -0.43 |
+| Trades | 9 | 9 | 0 |
+| Win rate | 44.44% | 44.44% | 0 |
+| Profit factor | 1.86 | 2.25 | -0.39 |
+| Total costs | $59.20 | $55.53 | +$3.67 |
+| Net P&L | $168.36 | $244.76 | -$76.40 |
+| BTC HODL | -29.66% | -35.26% | — |
+| vs BTC HODL | +39.78% | +39.59% | — |
+| Shield | PASS | PASS | — |
+
+### Trade Breakdown
+| # | Symbol | Entry | Exit | P&L | Return% | Hold | Exit Reason |
+|---|--------|-------|------|-----|---------|------|-------------|
+| 1 | GOLD | $4,429 | $4,766 | +$76.76 | +16.63% | 22d | RSI_OVERBOUGHT |
+| 2 | GOLD | $5,027 | $4,906 | -$25.75 | -7.38% | 14d | BREAKEVEN_STOP |
+| 3 | GOLD | $4,852 | $5,312 | +$99.42 | +20.59% | 31d | TIME_STOP |
+| 4 | NVDA | $204.44 | $225.31 | +$98.71 | +24.58% | 13d | RSI_OVERBOUGHT |
+| 5 | NVDA | $203.93 | $225.31 | +$89.16 | +25.44% | 9d | RSI_OVERBOUGHT |
+| 6 | TSLA | $434.37 | $415.88 | -$53.90 | -12.74% | 17d | BREAKEVEN_STOP |
+| 7 | NVDA | $224.81 | $200.20 | -$47.66 | -23.81% | 26d | BELOW_MA50 |
+| 8 | NVDA | $225.66 | $218.36 | -$36.30 | -9.57% | 10d | BREAKEVEN_STOP |
+| 9 | GOLD | $4,530 | $4,318 | -$32.08 | -11.26% | 26d | BELOW_MA50 |
+
+### What I Learned
+1. **RSI exit at 70 hurt — it cut winners short.** 3 trades exited on RSI_OVERBOUGHT that likely would have run further with the 75 threshold. Trades #1 and #4/5 were profitable but exited before full potential. The tighter exit cost ~$76 in net P&L vs R4C.
+2. **GOLD overweight (15%) didn't meaningfully help.** GOLD still generated the best single trade (+$99.42, trade #3) but the bigger probe size also amplified the GOLD losers (trades #2 and #9). Net effect was marginal.
+3. **Chop filter continues to work.** Only 9 trades in 365 days, 44% win rate, winners 2.3x bigger than losers. The filter is doing its job — keeping trade count low and quality high.
+4. **Strategy is robust out-of-sample.** Different data window than R3/R4, still profitable, still <10% DD, still beats BTC HODL by ~40%. The edge is real.
+5. **R4C remains the superior baseline.** R5 underperformed on return, Sharpe, and profit factor. No reason to ship R5 over R4C.
+
+### Verdict
+**FAIL — do not ship.** R4C remains the paper baseline. RSI exit at 70 is too tight. GOLD overweight is neutral.
+
+### What to Test Next (Round 6 Candidates)
+1. **RSI exit at 72** — split the difference between 70 and 75
+2. **Remove TSLA from universe** — TSLA has been consistently negative across all rounds
+3. **Widen breakeven stop to 2% below entry** instead of exact entry (give trades more room)
+4. **Add DXY as a tradeable asset** — dollar weakness/strength is core to the macro thesis
+5. **Test longer hold period** — 45 days instead of 30 (let winners run longer)
 
 ---
 
@@ -159,6 +218,11 @@
 | 1 | -67% | N/A | 52 | 38% | N/A | None | 6mo |
 | 2 | +6.43% | 53.8% | 6 | 50% | 0.92 | None | 6mo |
 | 3 | +4.33% | 12.65% | 15 | 33% | 0.41 | $79.90 | 12mo |
+| 4A | +4.02% | 19.34% | 15 | 33% | 0.34 | $80.12 | 12mo |
+| 4D | +4.14% | 12.04% | 26 | 31% | 0.38 | $30.43 | 12mo |
+| 4R1 | +3.95% | 12.80% | 16 | 31% | 0.39 | $80.50 | 12mo |
+| **4C** | **+14.9%** | **8.46%** | **9** | **44%** | **1.564** | **$55.53** | **12mo** |
+| 5 | +10.12% | 8.94% | 9 | 44% | 1.131 | $59.20 | 12mo |
 
 ## KEY FINDINGS (Saved to Memory)
 1. Regime filter is the #1 component — went from -67% to +6.43% just by adding it

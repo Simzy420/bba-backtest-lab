@@ -1,12 +1,14 @@
 {
   "metadata": {
     "description": "Big Brain Ape \u2014 Backtest Parameter History. Tracks every parameter combination tested and its result so we never test the same thing twice.",
-    "last_updated": "2026-09-16",
-    "total_rounds": 4,
-    "note": "Round 4 closed 2026-09-16. Shipped isolated C (chop filter) as new paper baseline. A/D/R1 rejects. No more isolated R4 runs unless Casey asks. No blending. No invented fills.",
+    "last_updated": "2026-10-02",
+    "total_rounds": 5,
+    "note": "Round 4 closed 2026-09-16 (shipped C). Round 5 tested 2026-10-02 (chop+gold15%+rsi70, FAIL vs R4C). R4C remains paper baseline.",
     "current_paper_baseline": "round4-C-chop-filter",
     "round4_status": "CLOSED",
-    "round4_shipped": "C"
+    "round4_shipped": "C",
+    "round5_status": "CLOSED",
+    "round5_verdict": "FAIL — RSI 70 too tight, GOLD overweight neutral. R4C remains baseline."
   },
   "rounds": [
     {
@@ -393,13 +395,13 @@
     "R4-A BE_STOP_DELAY=+3d calendar vs R3 \u2192 FAIL (ret\u2193 DD\u2191); shield pass",
     "R4-D FUNDING_FLATTEN 48h unless \u2265+1R \u2192 FAIL vs R3 + Shield VETO (26 trades); cost/gross ~32%",
     "R4-R1 TRANSITION probe-only \u2192 FAIL vs R3 (3.95%/DD12.80%/Sharpe0.386/n=16); shield pass",
-    "R4-C CHOP_FILTER ATR%/EMA-gap \u2192 PASS vs R3 (14.90%/DD8.46%/Sharpe1.564/n=9/WR44%/cost~18%); shield pass"
+    "R4-C CHOP_FILTER ATR%/EMA-gap → PASS vs R3 (14.90%/DD8.46%/Sharpe1.564/n=9/WR44%/cost~18%); shield pass",
+    "R5 CHOP+GOLD15%+RSI70 out-of-sample → FAIL vs R4C (10.12%/DD8.94%/Sharpe1.131/n=9/WR44%/cost~26%); RSI 70 too tight, GOLD overweight neutral"
   ],
   "next_to_test": [
-    "Round 4 CLOSED \u2014 shipped C as paper baseline",
-    "No more isolated R4 runs unless Casey asks",
-    "Optional later research only if Casey asks: R4-B entry tighten; closed-+1R BE",
-    "Standing: paper only; no leverage/size-up; ~15 trades/year feature (C ran n=9)"
+    "R4C remains paper baseline",
+    "Round 6 candidates: RSI exit 72, remove TSLA, wider BE stop (-2%), add DXY, longer hold (45d)",
+    "Standing: paper only; no leverage/size-up; ~9-15 trades/year feature"
   ],
   "ship_decision": {
     "date": "2026-09-16",
