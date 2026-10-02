@@ -1,0 +1,428 @@
+{
+  "test_id": "round9-support-breakout-v2",
+  "description": "Support bounce + resistance breakout v2 with 200MA regime filter, wider stops, fixed DD defense",
+  "changes_from_r8": [
+    "200MA regime filter \u2014 only trade when BTC and asset above 200MA",
+    "Support bounce requires 50MA sloping up",
+    "Wider stop loss: 5% instead of 3%",
+    "DD defense: stay in cash until BTC recovers above 200MA (no death spiral)",
+    "Exit on below 200MA instead of 50MA",
+    "Max position 25% instead of 30%"
+  ],
+  "config": {
+    "start_capital": 1663.0,
+    "leverage": 3,
+    "stop_loss_pct": 5.0,
+    "max_hold_days": 20,
+    "max_concurrent": 3,
+    "swing_lookback": 20,
+    "support_proximity_pct": 1.5,
+    "ma_trend": 200,
+    "universe": [
+      "BTC",
+      "ETH",
+      "SOL",
+      "NVDA",
+      "GOLD"
+    ],
+    "dd_defense": "go to cash until BTC > 200MA"
+  },
+  "metrics": {
+    "start_capital": 1663.0,
+    "final_equity": 1766.3,
+    "total_return_pct": 6.21,
+    "annualized_return_pct": 65.9,
+    "max_drawdown_pct": 15.97,
+    "sharpe_ratio": 1.001,
+    "num_trades": 5,
+    "win_rate_pct": 80.0,
+    "avg_win": 39.57,
+    "avg_loss": -60.34,
+    "profit_factor": 2.623,
+    "best_trade": 58.33,
+    "worst_trade": -60.34,
+    "avg_hold_days": 14,
+    "total_costs": 18.33,
+    "total_gross_pnl": 116.29,
+    "total_net_pnl": 97.94,
+    "support_bounce": {
+      "trades": 2,
+      "wins": 2,
+      "win_rate": 100.0,
+      "net_pnl": 113.77
+    },
+    "resistance_breakout": {
+      "trades": 3,
+      "wins": 2,
+      "win_rate": 66.67,
+      "net_pnl": -15.83
+    }
+  },
+  "benchmark_btc_hodl": {
+    "btc_entry_price": 120681.26,
+    "btc_exit_price": 84531.8,
+    "final_equity": 1164.86,
+    "total_return_pct": -29.95,
+    "max_drawdown_pct": 53.06,
+    "start_date": "2025-10-02",
+    "end_date": "2026-10-02"
+  },
+  "monte_carlo": {
+    "runs": 10000,
+    "bust_count": 0,
+    "survival_rate_pct": 100.0,
+    "return_p5": 5.89,
+    "return_p25": 5.89,
+    "return_median": 5.89,
+    "return_p75": 5.89,
+    "return_p95": 5.89,
+    "median_dd_pct": 3.44,
+    "p95_dd_pct": 3.63,
+    "worst_dd_pct": 3.63
+  },
+  "trades": [
+    {
+      "entry_date": "2026-09-03",
+      "exit_date": "2026-09-14",
+      "symbol": "NVDA",
+      "side": "LONG",
+      "entry_type": "RESISTANCE_BREAKOUT",
+      "entry_price": 228.1947,
+      "exit_price": 210.96,
+      "notional": 748.35,
+      "leverage": 3,
+      "hold_days": 11,
+      "stop_price": 216.7849,
+      "gross_pnl": -56.52,
+      "fees": 0.67,
+      "slippage": 0.67,
+      "funding": 2.47,
+      "net_pnl": -60.34,
+      "return_pct": -24.19,
+      "exit_reason": "STOP_LOSS"
+    },
+    {
+      "entry_date": "2026-09-11",
+      "exit_date": "2026-10-01",
+      "symbol": "BTC",
+      "side": "LONG",
+      "entry_type": "SUPPORT_BOUNCE",
+      "entry_price": 77173.7969,
+      "exit_price": 84853.1016,
+      "notional": 636.1,
+      "leverage": 3,
+      "hold_days": 20,
+      "stop_price": 73315.107,
+      "gross_pnl": 63.3,
+      "fees": 0.57,
+      "slippage": 0.57,
+      "funding": 3.82,
+      "net_pnl": 58.33,
+      "return_pct": 27.51,
+      "exit_reason": "TIME_STOP"
+    },
+    {
+      "entry_date": "2026-09-11",
+      "exit_date": "2026-10-01",
+      "symbol": "ETH",
+      "side": "LONG",
+      "entry_type": "RESISTANCE_BREAKOUT",
+      "entry_price": 2514.7339,
+      "exit_price": 2705.5371,
+      "notional": 540.68,
+      "leverage": 3,
+      "hold_days": 20,
+      "stop_price": 2388.9972,
+      "gross_pnl": 41.02,
+      "fees": 0.49,
+      "slippage": 0.49,
+      "funding": 3.24,
+      "net_pnl": 36.81,
+      "return_pct": 20.42,
+      "exit_reason": "TIME_STOP"
+    },
+    {
+      "entry_date": "2026-09-14",
+      "exit_date": "2026-10-02",
+      "symbol": "NVDA",
+      "side": "LONG",
+      "entry_type": "SUPPORT_BOUNCE",
+      "entry_price": 210.96,
+      "exit_price": 233.95,
+      "notional": 544.68,
+      "leverage": 3,
+      "hold_days": 18,
+      "stop_price": 200.412,
+      "gross_pnl": 59.36,
+      "fees": 0.49,
+      "slippage": 0.49,
+      "funding": 2.94,
+      "net_pnl": 55.44,
+      "return_pct": 30.53,
+      "exit_reason": "BACKTEST_END"
+    },
+    {
+      "entry_date": "2026-10-01",
+      "exit_date": "2026-10-02",
+      "symbol": "NVDA",
+      "side": "LONG",
+      "entry_type": "RESISTANCE_BREAKOUT",
+      "entry_price": 230.86,
+      "exit_price": 233.95,
+      "notional": 682.31,
+      "leverage": 3,
+      "hold_days": 1,
+      "stop_price": 219.317,
+      "gross_pnl": 9.13,
+      "fees": 0.61,
+      "slippage": 0.61,
+      "funding": 0.2,
+      "net_pnl": 7.7,
+      "return_pct": 3.39,
+      "exit_reason": "BACKTEST_END"
+    }
+  ],
+  "equity_curve": [
+    {
+      "date": "2026-09-03",
+      "equity": 1663.0,
+      "cash": 1413.55,
+      "positions": 1,
+      "drawdown_pct": 0.0,
+      "defensive": false
+    },
+    {
+      "date": "2026-09-04",
+      "equity": 1669.26,
+      "cash": 1413.55,
+      "positions": 1,
+      "drawdown_pct": 0.0,
+      "defensive": false
+    },
+    {
+      "date": "2026-09-05",
+      "equity": 1413.55,
+      "cash": 1413.55,
+      "positions": 1,
+      "drawdown_pct": 15.32,
+      "defensive": false
+    },
+    {
+      "date": "2026-09-06",
+      "equity": 1413.55,
+      "cash": 1413.55,
+      "positions": 1,
+      "drawdown_pct": 15.32,
+      "defensive": false
+    },
+    {
+      "date": "2026-09-07",
+      "equity": 1413.55,
+      "cash": 1413.55,
+      "positions": 1,
+      "drawdown_pct": 15.32,
+      "defensive": false
+    },
+    {
+      "date": "2026-09-08",
+      "equity": 1654.09,
+      "cash": 1413.55,
+      "positions": 1,
+      "drawdown_pct": 0.91,
+      "defensive": false
+    },
+    {
+      "date": "2026-09-09",
+      "equity": 1647.34,
+      "cash": 1413.55,
+      "positions": 1,
+      "drawdown_pct": 1.31,
+      "defensive": false
+    },
+    {
+      "date": "2026-09-10",
+      "equity": 1630.75,
+      "cash": 1413.55,
+      "positions": 1,
+      "drawdown_pct": 2.31,
+      "defensive": false
+    },
+    {
+      "date": "2026-09-11",
+      "equity": 1630.52,
+      "cash": 1021.29,
+      "positions": 3,
+      "drawdown_pct": 2.32,
+      "defensive": false
+    },
+    {
+      "date": "2026-09-12",
+      "equity": 1416.76,
+      "cash": 1021.29,
+      "positions": 3,
+      "drawdown_pct": 15.13,
+      "defensive": false
+    },
+    {
+      "date": "2026-09-13",
+      "equity": 1402.67,
+      "cash": 1021.29,
+      "positions": 3,
+      "drawdown_pct": 15.97,
+      "defensive": false
+    },
+    {
+      "date": "2026-09-14",
+      "equity": 1614.57,
+      "cash": 1028.84,
+      "positions": 3,
+      "drawdown_pct": 3.28,
+      "defensive": false
+    },
+    {
+      "date": "2026-09-15",
+      "equity": 1568.05,
+      "cash": 1028.84,
+      "positions": 3,
+      "drawdown_pct": 6.06,
+      "defensive": false
+    },
+    {
+      "date": "2026-09-16",
+      "equity": 1580.62,
+      "cash": 1028.84,
+      "positions": 3,
+      "drawdown_pct": 5.31,
+      "defensive": false
+    },
+    {
+      "date": "2026-09-17",
+      "equity": 1603.41,
+      "cash": 1028.84,
+      "positions": 3,
+      "drawdown_pct": 3.94,
+      "defensive": false
+    },
+    {
+      "date": "2026-09-18",
+      "equity": 1683.36,
+      "cash": 1028.84,
+      "positions": 3,
+      "drawdown_pct": 0.0,
+      "defensive": false
+    },
+    {
+      "date": "2026-09-19",
+      "equity": 1479.77,
+      "cash": 1028.84,
+      "positions": 3,
+      "drawdown_pct": 12.09,
+      "defensive": false
+    },
+    {
+      "date": "2026-09-20",
+      "equity": 1481.39,
+      "cash": 1028.84,
+      "positions": 3,
+      "drawdown_pct": 12.0,
+      "defensive": false
+    },
+    {
+      "date": "2026-09-21",
+      "equity": 1779.05,
+      "cash": 1028.84,
+      "positions": 3,
+      "drawdown_pct": 0.0,
+      "defensive": false
+    },
+    {
+      "date": "2026-09-22",
+      "equity": 1774.22,
+      "cash": 1028.84,
+      "positions": 3,
+      "drawdown_pct": 0.27,
+      "defensive": false
+    },
+    {
+      "date": "2026-09-23",
+      "equity": 1736.19,
+      "cash": 1028.84,
+      "positions": 3,
+      "drawdown_pct": 2.41,
+      "defensive": false
+    },
+    {
+      "date": "2026-09-24",
+      "equity": 1734.32,
+      "cash": 1028.84,
+      "positions": 3,
+      "drawdown_pct": 2.51,
+      "defensive": false
+    },
+    {
+      "date": "2026-09-25",
+      "equity": 1733.43,
+      "cash": 1028.84,
+      "positions": 3,
+      "drawdown_pct": 2.56,
+      "defensive": false
+    },
+    {
+      "date": "2026-09-26",
+      "equity": 1519.52,
+      "cash": 1028.84,
+      "positions": 3,
+      "drawdown_pct": 14.59,
+      "defensive": false
+    },
+    {
+      "date": "2026-09-27",
+      "equity": 1518.17,
+      "cash": 1028.84,
+      "positions": 3,
+      "drawdown_pct": 14.66,
+      "defensive": false
+    },
+    {
+      "date": "2026-09-28",
+      "equity": 1738.44,
+      "cash": 1028.84,
+      "positions": 3,
+      "drawdown_pct": 2.28,
+      "defensive": false
+    },
+    {
+      "date": "2026-09-29",
+      "equity": 1732.6,
+      "cash": 1028.84,
+      "positions": 3,
+      "drawdown_pct": 2.61,
+      "defensive": false
+    },
+    {
+      "date": "2026-09-30",
+      "equity": 1736.55,
+      "cash": 1028.84,
+      "positions": 3,
+      "drawdown_pct": 2.39,
+      "defensive": false
+    },
+    {
+      "date": "2026-10-01",
+      "equity": 1758.36,
+      "cash": 1288.81,
+      "positions": 2,
+      "drawdown_pct": 1.16,
+      "defensive": false
+    },
+    {
+      "date": "2026-10-02",
+      "equity": 1766.3,
+      "cash": 1288.81,
+      "positions": 2,
+      "drawdown_pct": 0.72,
+      "defensive": false
+    }
+  ],
+  "generated_at": "2026-10-02T23:04:31.502253+00:00"
+}

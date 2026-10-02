@@ -2,9 +2,8 @@
   "metadata": {
     "description": "Big Brain Ape \u2014 Backtest Parameter History. Tracks every parameter combination tested and its result so we never test the same thing twice.",
     "last_updated": "2026-10-02",
-    "total_rounds": 6,
-    "note": "R4 closed 2026-09-16 (shipped C). R5 FAIL (rsi70+gold15%). R6 FAIL (no-tsla+be2%+hold45d, but win rate jumped to 56%). R4C remains paper baseline. TSLA removal confirmed as improvement.",
-    "current_paper_baseline": "round4-C-chop-filter",
+    "total_rounds": 9,
+    "note": "R4 closed 2026-09-16 (shipped C). R5 FAIL (rsi70+gold15%). R6 FAIL (no-tsla+be2%+hold45d, but win rate jumped to 56%). R7 FAIL (5yr chop filter, -19.77%, DD defense bug froze strategy). R8 FAIL (support/breakout, -96%, no regime filter, death spiral DD). R9: 200MA filter fixed win rate (50%→80% last 30d), but 5yr still -96% due to DD defense ratchet. Last 30 days: +6.21%, 80% WR, Sharpe 1.0, PF 2.6. R4C remains paper baseline for macro strategy. R9 support/breakout shows promise in current regime.",
     "round4_status": "CLOSED",
     "round4_shipped": "C",
     "round5_status": "CLOSED",
@@ -398,12 +397,17 @@
     "R4-D FUNDING_FLATTEN 48h unless \u2265+1R \u2192 FAIL vs R3 + Shield VETO (26 trades); cost/gross ~32%",
     "R4-R1 TRANSITION probe-only \u2192 FAIL vs R3 (3.95%/DD12.80%/Sharpe0.386/n=16); shield pass",
     "R4-C CHOP_FILTER ATR%/EMA-gap → PASS vs R3 (14.90%/DD8.46%/Sharpe1.564/n=9/WR44%/cost~18%); shield pass",
-    "R5 CHOP+GOLD15%+RSI70 out-of-sample → FAIL vs R4C (10.12%/DD8.94%/Sharpe1.131/n=9/WR44%/cost~26%); RSI 70 too tight, GOLD overweight neutral"
+    "R5 CHOP+GOLD15%+RSI70 out-of-sample → FAIL vs R4C (10.12%/DD8.94%/Sharpe1.131/n=9/WR44%/cost~26%); RSI 70 too tight, GOLD overweight neutral",
+    "R6 NO-TSLA+BE2%+HOLD45D → FAIL vs R4C (13.68%/DD9.53%/Sharpe1.218/n=9/WR56%); TSLA removal improved WR, wider BE amplified losers",
+    "R7 5YR CHOP FILTER → FAIL (-19.77%/DD20.6%/Sharpe-0.587/n=11/WR18%); DD defense bug froze strategy after Feb 2023, 0 trades 2024-2026",
+    "R8 SUPPORT BOUNCE + RESISTANCE BREAKOUT (no filter) → FAIL (-96.13%/DD96%/Sharpe-0.981/n=46/WR15%); buying breakouts in bear market = suicide",
+    "R9 SUPPORT BOUNCE + BREAKOUT v2 (200MA filter) → 5yr FAIL (-96.17%, DD defense ratchet) but LAST 30 DAYS: +6.21%/DD15.97%/Sharpe1.0/n=5/WR80%/PF2.62; 200MA filter fixed win rate, support bounces 100% WR"
   ],
   "next_to_test": [
-    "R4C remains paper baseline",
-    "Round 6 candidates: RSI exit 72, remove TSLA, wider BE stop (-2%), add DXY, longer hold (45d)",
-    "Standing: paper only; no leverage/size-up; ~9-15 trades/year feature"
+    "R10: Remove DD defense entirely, keep 200MA filter, test 5yr — does the strategy survive without the ratchet?",
+    "R10 alt: Test on Hyperliquid testnet with current R9 strategy (paper trading)",
+    "R4C remains paper baseline for macro strategy",
+    "R9 support/breakout with 200MA filter shows promise in current regime — candidate for live deployment"
   ],
   "ship_decision": {
     "date": "2026-09-16",

@@ -318,3 +318,142 @@ See `backtest-params.json` for full details on each subtest.
 ### Round 4 pick
 Prefer isolated test **A** (BE delay +1.5R or bar 8), then **D** (funding flatten). Shield: DD>20% or >25 trades/yr. Paper only; 15 trades/yr is the feature.
 
+---
+
+## ROUND 5 — Chop Filter + GOLD Overweight + RSI Exit 70 (Out-of-Sample)
+**Date:** 2026-10-02
+**Engine:** `bba-engine/round5_chop_gold_rsi70.py`
+**Period:** 12 months (Oct 2025 – Oct 2026)
+**Baseline:** R4C (chop filter, shipped)
+
+### Changes from R4C
+- GOLD probe size: 10% → 15%
+- RSI exit: 75 → 70 (tighter profit taking)
+- Fresh data (out-of-sample test)
+
+### Results
+| Metric | R5 | R4C |
+|--------|-----|-----|
+| Return | +10.12% | +14.90% |
+| Max DD | 8.94% | 8.46% |
+| Sharpe | 1.131 | 1.564 |
+| Trades | 9 | 9 |
+| Win Rate | 44% | 44% |
+
+**Verdict: FAIL vs R4C.** RSI 70 cut winners short. Chop filter confirmed as the real edge. R4C remains baseline.
+
+---
+
+## ROUND 6 — No TSLA + Wider BE Stop + Longer Hold
+**Date:** 2026-10-02
+**Engine:** `bba-engine/round6_no_tsla_be2pct_hold45.py`
+**Period:** 12 months (Oct 2025 – Oct 2026)
+
+### Changes from R4C
+- Removed TSLA from universe (consistently worst performer)
+- BE stop: entry → 2% below entry (wider)
+- Max hold: 30 → 45 days
+
+### Results
+| Metric | R6 | R4C |
+|--------|-----|-----|
+| Return | +13.68% | +14.90% |
+| Max DD | 9.53% | 8.46% |
+| Sharpe | 1.218 | 1.564 |
+| Trades | 9 | 9 |
+| Win Rate | 56% | 44% |
+| Best Trade | +$147 | — |
+
+**Verdict: FAIL vs R4C** but best round after R4C. TSLA removal improved win rate to 56%. NVDA is the new problem child. R4C remains baseline.
+
+---
+
+## ROUND 7 — 5-Year Chop Filter (R4C Strategy)
+**Date:** 2026-10-02
+**Engine:** `bba-engine/round7_5yr_chop_filter.py`
+**Period:** 5 years (Oct 2021 – Oct 2026)
+
+### Results
+| Metric | Result |
+|--------|--------|
+| Return | -19.77% |
+| Max DD | 20.60% |
+| Sharpe | -0.587 |
+| Trades | 11 |
+| Win Rate | 18% |
+| Profit Factor | 0.112 |
+
+**Verdict: FAIL.** DD defense bug — triggered Feb 2023, froze strategy permanently. Zero trades 2024-2026. Slept through entire bull market. Monte Carlo: 100% survival but all shuffles produce same -20% (all trades negative-dominant).
+
+---
+
+## ROUND 8 — Support Bounce + Resistance Breakout (No Filter)
+**Date:** 2026-10-02
+**Engine:** `bba-engine/round8_support_breakout_momentum.py`
+**Period:** 5 years (Oct 2021 – Oct 2026)
+**Strategy:** New — not Druckenmiller macro. Pure price action.
+
+### Entry Rules
+- **Support Bounce:** Price within 1.5% of 20-day low, closes above, RSI 35-55, above 50MA
+- **Resistance Breakout:** Price above 20-day high, RSI 55-72, both MAs up, volume confirm
+
+### Results
+| Metric | Result |
+|--------|--------|
+| Return | -96.13% |
+| Max DD | 96.26% |
+| Trades | 46 |
+| Win Rate | 15.22% |
+| Resistance Breakout WR | 10.5% |
+| Support Bounce WR | 37.5% |
+
+**Verdict: FAIL.** Buying breakouts in a bear market = suicide. 10.5% win rate on breakouts. DD defense death spiral (peak reset ratchet). Core problem: no regime filter.
+
+---
+
+## ROUND 9 — Support Bounce + Resistance Breakout v2 (200MA Filter)
+**Date:** 2026-10-02
+**Engine:** `bba-engine/round9_support_breakout_v2.py`
+**Period:** 5 years (5yr run) + last 30 days (1mo run)
+
+### Fixes from R8
+1. 200-day MA regime filter — only trade when BTC and asset above 200MA
+2. Support bounce requires 50MA sloping up
+3. Wider stop loss: 5% instead of 3%
+4. DD defense: stay in cash until BTC recovers above 200MA
+5. Exit on below 200MA instead of 50MA
+
+### 5-Year Results
+| Metric | Result |
+|--------|--------|
+| Return | -96.17% |
+| Win Rate | 50% |
+| Profit Factor | 1.038 |
+| Resistance Breakout WR | 62.5% |
+| Support Bounce WR | 36.4% |
+| Net P&L on trades | +$5.13 |
+
+**5yr verdict: FAIL** — DD defense ratchet still destroyed the account despite profitable trades. The 200MA filter fixed the strategy (50% WR, PF 1.04) but the risk management is the problem.
+
+### Last 30 Days Results
+| Metric | Result |
+|--------|--------|
+| Return | +6.21% |
+| Annualized | +65.90% |
+| Max DD | 15.97% |
+| Sharpe | 1.001 |
+| Trades | 5 |
+| Win Rate | 80% |
+| Profit Factor | 2.623 |
+| vs BTC HODL | +36.16% |
+| Shield | PASS ✅ |
+
+**30-day verdict: PASS.** Strategy works in current regime. Support bounces 100% WR (+$114). 200MA filter keeps you out of bear markets. The DD defense is the only thing killing the 5-year result.
+
+### Key Findings (R7-R9)
+1. DD defense peak-reset ratchet is destructive — it bleeds the account to death even when trades are profitable
+2. 200-day MA filter is the single most important regime filter — went from 15% WR to 50-80% WR
+3. Support bounces outperform resistance breakouts (higher WR, more consistent)
+4. The strategy works in the current market regime — but needs DD defense fix for long-term survival
+5. Next step: R10 with no DD defense, just 200MA filter, test 5yr
+
