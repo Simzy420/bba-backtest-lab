@@ -211,6 +211,69 @@ See `backtest-params.json` for full details on each subtest.
 
 ---
 
+## ROUND 6 — No TSLA + Wider BE Stop (2%) + Longer Hold (45d)
+**Date:** 2026-10-02
+**Engine:** /workspace/bba-backtest-lab/bba-engine/round6_no_tsla_be2pct_hold45.py
+**Period:** 365 days (latest, ~Oct 2025 – Oct 2026)
+**Capital:** $1,663
+**Baseline:** Round 4C (chop filter)
+
+### Changes from R4C
+1. Remove TSLA from tradeable universe (was consistently the worst performer)
+2. Breakeven stop: 2% below entry instead of exact entry (give trades room to breathe)
+3. Max hold: 45 days instead of 30 (let winners run longer)
+
+### Results
+| Metric | R6 | R4C | Delta | R5 | Delta vs R5 |
+|--------|-----|-----|-------|-----|-------------|
+| Total return | +13.68% | +14.90% | -1.22% | +10.12% | +3.56% |
+| Max drawdown | 9.53% | 8.46% | +1.07% | 8.94% | +0.59% |
+| Sharpe | 1.218 | 1.564 | -0.35 | 1.131 | +0.09 |
+| Trades | 9 | 9 | 0 | 9 | 0 |
+| Win rate | 55.56% | 44.44% | **+11.12%** | 44.44% | **+11.12%** |
+| Profit factor | 2.21 | 2.25 | -0.04 | 1.86 | +0.34 |
+| Best trade | $146.92 | — | — | $99.42 | +$47.50 |
+| Worst trade | -$77.10 | — | — | -$53.90 | -$23.20 |
+| BTC HODL | -29.66% | -35.26% | — | -29.66% | — |
+| vs BTC HODL | +43.34% | +39.59% | — | +39.78% | — |
+| Shield | PASS | PASS | — | PASS | — |
+
+### Trade Breakdown
+| # | Symbol | Entry | Exit | P&L | Return% | Hold | Exit Reason |
+|---|--------|-------|------|-----|---------|------|-------------|
+| 1 | GOLD | $4,446 | $4,838 | +$79.92 | +20.45% | 23d | RSI_OVERBOUGHT |
+| 2 | GOLD | $4,872 | $5,159 | +$49.03 | +11.97% | 35d | RISK_OFF |
+| 3 | GOLD | $5,044 | $5,159 | +$9.32 | +2.97% | 31d | RISK_OFF |
+| 4 | NVDA | $204.44 | $235.20 | +$146.92 | +36.82% | 14d | RSI_OVERBOUGHT |
+| 5 | NVDA | $203.93 | $235.20 | +$131.08 | +37.65% | 10d | RSI_OVERBOUGHT |
+| 6 | NVDA | $224.81 | $200.20 | -$49.52 | -23.81% | 26d | BELOW_MA50 |
+| 7 | NVDA | $221.81 | $200.20 | -$39.73 | -21.23% | 23d | BELOW_MA50 |
+| 8 | NVDA | $225.66 | $210.96 | -$77.10 | -18.32% | 14d | BELOW_MA50 |
+| 9 | GOLD | $4,530 | $4,318 | -$22.40 | -11.26% | 26d | BELOW_MA50 |
+
+### What I Learned
+1. **Removing TSLA was the right call — win rate jumped from 44% to 56%.** TSLA was a consistent loser across all rounds. Cutting it immediately improved trade quality. 5 wins out of 9 vs 4 out of 9 in R4C/R5.
+2. **Wider BE stop (2% buffer) saved trades — but also let losers run bigger.** The 2% buffer below entry prevented some premature BE exits, but the worst trade worsened to -$77.10 (vs R5's -$53.90). The wider stop is a double-edged sword.
+3. **Longer hold (45d) had minimal impact.** Only 1 trade hit 35 days (RISK_OFF exit), none reached the new 45-day limit. The 30-day limit wasn't actually binding in most cases. The exit reasons that matter are BELOW_MA50 and RSI_OVERBOUGHT, not TIME_STOP.
+4. **NVDA is the new TSLA.** 3 of 4 losses are NVDA. The May-June and Aug-Sep NVDA trades all hit BELOW_MA50. NVDA is volatile enough that the MA50 exit triggers frequently. Consider tighter NVDA-specific risk management.
+5. **GOLD remains the anchor.** 3 of 5 wins are GOLD. The RISK_OFF exit on trades #2 and #3 actually captured gains that would have been given back — the regime filter protected profits.
+6. **Still close to R4C but not better.** Return -1.22%, Sharpe -0.35. The win rate improvement is real but didn't translate to higher returns because the wider stop amplified losers.
+7. **Best trade improved to +$146.92** (NVDA, trade #4) — the wider BE stop let this winner run to RSI overbought instead of getting clipped at breakeven.
+
+### Verdict
+**FAIL — do not ship.** Close to R4C but slightly worse on return and Sharpe. However, two findings are actionable:
+- **Remove TSLA permanently** — win rate improvement is undeniable
+- **Wider BE stop has merit** but needs tighter overall risk to offset bigger losers
+
+### What to Test Next (Round 7 Candidates)
+1. **R4C + remove TSLA only** — isolate the TSLA removal (keep BE at entry, hold 30d)
+2. **NVDA-specific tighter stop** — use 1% BE buffer for NVDA, 2% for everything else
+3. **Add DXY to universe** — dollar weakness is core to the gold thesis
+4. **RSI exit at 72** — still untested, between 70 (too tight) and 75 (R4C baseline)
+5. **Trailing stop instead of fixed BE** — trail at 5% below highest since entry
+
+---
+
 ## SUMMARY TABLE
 
 | Round | Return | Max DD | Trades | Win Rate | Sharpe | Costs | Period |
@@ -223,6 +286,7 @@ See `backtest-params.json` for full details on each subtest.
 | 4R1 | +3.95% | 12.80% | 16 | 31% | 0.39 | $80.50 | 12mo |
 | **4C** | **+14.9%** | **8.46%** | **9** | **44%** | **1.564** | **$55.53** | **12mo** |
 | 5 | +10.12% | 8.94% | 9 | 44% | 1.131 | $59.20 | 12mo |
+| 6 | +13.68% | 9.53% | 9 | 56% | 1.218 | $58.60 | 12mo |
 
 ## KEY FINDINGS (Saved to Memory)
 1. Regime filter is the #1 component — went from -67% to +6.43% just by adding it

@@ -2,13 +2,15 @@
   "metadata": {
     "description": "Big Brain Ape \u2014 Backtest Parameter History. Tracks every parameter combination tested and its result so we never test the same thing twice.",
     "last_updated": "2026-10-02",
-    "total_rounds": 5,
-    "note": "Round 4 closed 2026-09-16 (shipped C). Round 5 tested 2026-10-02 (chop+gold15%+rsi70, FAIL vs R4C). R4C remains paper baseline.",
+    "total_rounds": 6,
+    "note": "R4 closed 2026-09-16 (shipped C). R5 FAIL (rsi70+gold15%). R6 FAIL (no-tsla+be2%+hold45d, but win rate jumped to 56%). R4C remains paper baseline. TSLA removal confirmed as improvement.",
     "current_paper_baseline": "round4-C-chop-filter",
     "round4_status": "CLOSED",
     "round4_shipped": "C",
     "round5_status": "CLOSED",
-    "round5_verdict": "FAIL — RSI 70 too tight, GOLD overweight neutral. R4C remains baseline."
+    "round5_verdict": "FAIL — RSI 70 too tight, GOLD overweight neutral. R4C remains baseline.",
+    "round6_status": "CLOSED",
+    "round6_verdict": "FAIL — close to R4C but worse Sharpe. TSLA removal improved win rate to 56%. Wider BE stop amplified losers. R4C remains baseline."
   },
   "rounds": [
     {

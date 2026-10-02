@@ -1,0 +1,1872 @@
+{
+  "test_id": "round6-no-tsla-be2pct-hold45",
+  "description": "R4C chop filter + remove TSLA + BE stop 2% below + hold 45d, fresh 365-day data",
+  "baseline": "round4-C-chop-filter",
+  "changes_from_baseline": [
+    "Remove TSLA from tradeable universe (consistently negative)",
+    "Breakeven stop: avg_entry * 0.98 instead of avg_entry (2% buffer)",
+    "Max hold: 45 days instead of 30 (let winners run)"
+  ],
+  "config": {
+    "start_capital": 1663.0,
+    "rsi_exit_max": 75,
+    "max_hold_days": 45,
+    "be_stop_buffer_pct": 0.02,
+    "universe": [
+      "BTC",
+      "ETH",
+      "SOL",
+      "GOLD",
+      "NVDA",
+      "^GSPC"
+    ],
+    "chop_filter": {
+      "atr_period": 14,
+      "atr_median_bars": 20,
+      "ema_gap_min_pct": 0.004
+    },
+    "fee_bps_per_side": 4.5,
+    "slippage_bps_per_side": 4.5
+  },
+  "regime_distribution": {
+    "RISK-ON": 154,
+    "TRANSITION": 82,
+    "RISK-OFF": 16
+  },
+  "metrics": {
+    "start_capital": 1663.0,
+    "final_equity": 1890.52,
+    "total_return_pct": 13.68,
+    "max_drawdown_pct": 9.53,
+    "sharpe_ratio": 1.218,
+    "num_trades": 9,
+    "win_rate_pct": 55.56,
+    "avg_win": 83.25,
+    "avg_loss": -47.19,
+    "profit_factor": 2.205,
+    "best_trade": 146.92,
+    "worst_trade": -77.1,
+    "avg_hold_days": 22.4,
+    "total_costs": 58.6,
+    "total_gross_pnl": 286.11,
+    "total_net_pnl": 227.52
+  },
+  "benchmark_btc_hodl": {
+    "btc_entry_price": 120612.0,
+    "btc_exit_price": 84842.0,
+    "final_equity": 1169.8,
+    "total_return_pct": -29.66,
+    "max_drawdown_pct": 51.95,
+    "start_date": "2025-10-03",
+    "end_date": "2026-10-02"
+  },
+  "shield": {
+    "dd_limit_pct": 20,
+    "trades_limit": 25,
+    "veto": false,
+    "veto_reason": "",
+    "dd": 9.53,
+    "trades": 9
+  },
+  "trades": [
+    {
+      "entry_date": "2025-12-29",
+      "exit_date": "2026-01-21",
+      "symbol": "GOLD",
+      "side": "LONG",
+      "phase": "confirm",
+      "entry_price": 4445.6869,
+      "exit_price": 4837.5,
+      "notional": 1006.12,
+      "leverage": 3,
+      "hold_days": 23,
+      "regime_at_entry": "RISK-ON",
+      "gross_pnl": 88.67,
+      "fees": 0.91,
+      "slippage": 0.91,
+      "funding": 6.94,
+      "net_pnl": 79.92,
+      "return_pct": 20.45,
+      "exit_reason": "RSI_OVERBOUGHT"
+    },
+    {
+      "entry_date": "2026-01-30",
+      "exit_date": "2026-03-06",
+      "symbol": "GOLD",
+      "side": "LONG",
+      "phase": "confirm",
+      "entry_price": 4872.2232,
+      "exit_price": 5158.7002,
+      "notional": 1054.47,
+      "leverage": 3,
+      "hold_days": 35,
+      "regime_at_entry": "RISK-ON",
+      "gross_pnl": 62.0,
+      "fees": 0.95,
+      "slippage": 0.95,
+      "funding": 11.07,
+      "net_pnl": 49.03,
+      "return_pct": 11.97,
+      "exit_reason": "RISK_OFF"
+    },
+    {
+      "entry_date": "2026-02-03",
+      "exit_date": "2026-03-06",
+      "symbol": "GOLD",
+      "side": "LONG",
+      "phase": "confirm",
+      "entry_price": 5044.4504,
+      "exit_price": 5158.7002,
+      "notional": 806.67,
+      "leverage": 3,
+      "hold_days": 31,
+      "regime_at_entry": "RISK-ON",
+      "gross_pnl": 18.27,
+      "fees": 0.73,
+      "slippage": 0.73,
+      "funding": 7.5,
+      "net_pnl": 9.32,
+      "return_pct": 2.97,
+      "exit_reason": "RISK_OFF"
+    },
+    {
+      "entry_date": "2026-04-30",
+      "exit_date": "2026-05-14",
+      "symbol": "NVDA",
+      "side": "LONG",
+      "phase": "confirm",
+      "entry_price": 204.4362,
+      "exit_price": 235.2024,
+      "notional": 1016.81,
+      "leverage": 3,
+      "hold_days": 14,
+      "regime_at_entry": "RISK-ON",
+      "gross_pnl": 153.02,
+      "fees": 0.92,
+      "slippage": 0.92,
+      "funding": 4.27,
+      "net_pnl": 146.92,
+      "return_pct": 36.82,
+      "exit_reason": "RSI_OVERBOUGHT"
+    },
+    {
+      "entry_date": "2026-05-04",
+      "exit_date": "2026-05-14",
+      "symbol": "NVDA",
+      "side": "LONG",
+      "phase": "confirm",
+      "entry_price": 203.9279,
+      "exit_price": 235.2024,
+      "notional": 882.3,
+      "leverage": 3,
+      "hold_days": 10,
+      "regime_at_entry": "RISK-ON",
+      "gross_pnl": 135.31,
+      "fees": 0.79,
+      "slippage": 0.79,
+      "funding": 2.65,
+      "net_pnl": 131.08,
+      "return_pct": 37.65,
+      "exit_reason": "RSI_OVERBOUGHT"
+    },
+    {
+      "entry_date": "2026-05-15",
+      "exit_date": "2026-06-10",
+      "symbol": "NVDA",
+      "side": "LONG",
+      "phase": "probe",
+      "entry_price": 224.8062,
+      "exit_price": 200.196,
+      "notional": 415.85,
+      "leverage": 2,
+      "hold_days": 26,
+      "regime_at_entry": "RISK-ON",
+      "gross_pnl": -45.52,
+      "fees": 0.37,
+      "slippage": 0.37,
+      "funding": 3.24,
+      "net_pnl": -49.52,
+      "return_pct": -23.81,
+      "exit_reason": "BELOW_MA50"
+    },
+    {
+      "entry_date": "2026-05-18",
+      "exit_date": "2026-06-10",
+      "symbol": "NVDA",
+      "side": "LONG",
+      "phase": "probe",
+      "entry_price": 221.813,
+      "exit_price": 200.196,
+      "notional": 374.27,
+      "leverage": 2,
+      "hold_days": 23,
+      "regime_at_entry": "RISK-ON",
+      "gross_pnl": -36.47,
+      "fees": 0.34,
+      "slippage": 0.34,
+      "funding": 2.58,
+      "net_pnl": -39.73,
+      "return_pct": -21.23,
+      "exit_reason": "BELOW_MA50"
+    },
+    {
+      "entry_date": "2026-08-31",
+      "exit_date": "2026-09-14",
+      "symbol": "NVDA",
+      "side": "LONG",
+      "phase": "confirm",
+      "entry_price": 225.662,
+      "exit_price": 210.96,
+      "notional": 1083.56,
+      "leverage": 3,
+      "hold_days": 14,
+      "regime_at_entry": "RISK-ON",
+      "gross_pnl": -70.59,
+      "fees": 0.98,
+      "slippage": 0.98,
+      "funding": 4.55,
+      "net_pnl": -77.1,
+      "return_pct": -18.32,
+      "exit_reason": "BELOW_MA50"
+    },
+    {
+      "entry_date": "2026-08-28",
+      "exit_date": "2026-09-23",
+      "symbol": "GOLD",
+      "side": "LONG",
+      "phase": "probe",
+      "entry_price": 4529.8999,
+      "exit_price": 4318.3999,
+      "notional": 398.0,
+      "leverage": 2,
+      "hold_days": 26,
+      "regime_at_entry": "RISK-ON",
+      "gross_pnl": -18.58,
+      "fees": 0.36,
+      "slippage": 0.36,
+      "funding": 3.1,
+      "net_pnl": -22.4,
+      "return_pct": -11.26,
+      "exit_reason": "BELOW_MA50"
+    }
+  ],
+  "equity_curve": [
+    {
+      "date": "2025-12-12",
+      "equity": 1663.0,
+      "cash": 1663.0,
+      "positions_open": 0,
+      "regime": "RISK-ON",
+      "drawdown_pct": 0.0
+    },
+    {
+      "date": "2025-12-15",
+      "equity": 1663.0,
+      "cash": 1663.0,
+      "positions_open": 0,
+      "regime": "RISK-ON",
+      "drawdown_pct": 0.0
+    },
+    {
+      "date": "2025-12-16",
+      "equity": 1663.0,
+      "cash": 1663.0,
+      "positions_open": 0,
+      "regime": "RISK-ON",
+      "drawdown_pct": 0.0
+    },
+    {
+      "date": "2025-12-17",
+      "equity": 1663.0,
+      "cash": 1663.0,
+      "positions_open": 0,
+      "regime": "TRANSITION",
+      "drawdown_pct": 0.0
+    },
+    {
+      "date": "2025-12-18",
+      "equity": 1663.0,
+      "cash": 1663.0,
+      "positions_open": 0,
+      "regime": "RISK-ON",
+      "drawdown_pct": 0.0
+    },
+    {
+      "date": "2025-12-19",
+      "equity": 1663.0,
+      "cash": 1663.0,
+      "positions_open": 0,
+      "regime": "RISK-ON",
+      "drawdown_pct": 0.0
+    },
+    {
+      "date": "2025-12-22",
+      "equity": 1663.0,
+      "cash": 1663.0,
+      "positions_open": 0,
+      "regime": "RISK-ON",
+      "drawdown_pct": 0.0
+    },
+    {
+      "date": "2025-12-23",
+      "equity": 1663.0,
+      "cash": 1663.0,
+      "positions_open": 0,
+      "regime": "RISK-ON",
+      "drawdown_pct": 0.0
+    },
+    {
+      "date": "2025-12-24",
+      "equity": 1663.0,
+      "cash": 1663.0,
+      "positions_open": 0,
+      "regime": "RISK-ON",
+      "drawdown_pct": 0.0
+    },
+    {
+      "date": "2025-12-26",
+      "equity": 1663.0,
+      "cash": 1663.0,
+      "positions_open": 0,
+      "regime": "RISK-ON",
+      "drawdown_pct": 0.0
+    },
+    {
+      "date": "2025-12-29",
+      "equity": 1663.0,
+      "cash": 1496.7,
+      "positions_open": 1,
+      "regime": "RISK-ON",
+      "drawdown_pct": 0.0
+    },
+    {
+      "date": "2025-12-30",
+      "equity": 1666.27,
+      "cash": 1496.7,
+      "positions_open": 1,
+      "regime": "RISK-ON",
+      "drawdown_pct": 0.0
+    },
+    {
+      "date": "2025-12-31",
+      "equity": 1662.81,
+      "cash": 1496.7,
+      "positions_open": 1,
+      "regime": "RISK-ON",
+      "drawdown_pct": 0.21
+    },
+    {
+      "date": "2026-01-02",
+      "equity": 1661.93,
+      "cash": 1496.7,
+      "positions_open": 1,
+      "regime": "RISK-ON",
+      "drawdown_pct": 0.26
+    },
+    {
+      "date": "2026-01-05",
+      "equity": 1671.26,
+      "cash": 1496.7,
+      "positions_open": 1,
+      "regime": "RISK-ON",
+      "drawdown_pct": 0.0
+    },
+    {
+      "date": "2026-01-06",
+      "equity": 1674.68,
+      "cash": 1272.2,
+      "positions_open": 1,
+      "regime": "RISK-ON",
+      "drawdown_pct": 0.0
+    },
+    {
+      "date": "2026-01-07",
+      "equity": 1666.81,
+      "cash": 1272.2,
+      "positions_open": 1,
+      "regime": "RISK-ON",
+      "drawdown_pct": 0.47
+    },
+    {
+      "date": "2026-01-08",
+      "equity": 1666.4,
+      "cash": 1272.2,
+      "positions_open": 1,
+      "regime": "RISK-ON",
+      "drawdown_pct": 0.49
+    },
+    {
+      "date": "2026-01-09",
+      "equity": 1675.5,
+      "cash": 1272.2,
+      "positions_open": 1,
+      "regime": "RISK-ON",
+      "drawdown_pct": 0.0
+    },
+    {
+      "date": "2026-01-12",
+      "equity": 1701.25,
+      "cash": 1272.2,
+      "positions_open": 1,
+      "regime": "RISK-ON",
+      "drawdown_pct": 0.0
+    },
+    {
+      "date": "2026-01-13",
+      "equity": 1697.72,
+      "cash": 1272.2,
+      "positions_open": 1,
+      "regime": "RISK-ON",
+      "drawdown_pct": 0.21
+    },
+    {
+      "date": "2026-01-14",
+      "equity": 1706.0,
+      "cash": 1272.2,
+      "positions_open": 1,
+      "regime": "RISK-ON",
+      "drawdown_pct": 0.0
+    },
+    {
+      "date": "2026-01-15",
+      "equity": 1703.29,
+      "cash": 1272.2,
+      "positions_open": 1,
+      "regime": "RISK-ON",
+      "drawdown_pct": 0.16
+    },
+    {
+      "date": "2026-01-16",
+      "equity": 1696.88,
+      "cash": 1272.2,
+      "positions_open": 1,
+      "regime": "RISK-ON",
+      "drawdown_pct": 0.53
+    },
+    {
+      "date": "2026-01-20",
+      "equity": 1735.45,
+      "cash": 1272.2,
+      "positions_open": 1,
+      "regime": "TRANSITION",
+      "drawdown_pct": 0.0
+    },
+    {
+      "date": "2026-01-21",
+      "equity": 1751.67,
+      "cash": 1742.92,
+      "positions_open": 0,
+      "regime": "RISK-ON",
+      "drawdown_pct": 0.0
+    },
+    {
+      "date": "2026-01-22",
+      "equity": 1742.92,
+      "cash": 1742.92,
+      "positions_open": 0,
+      "regime": "RISK-ON",
+      "drawdown_pct": 0.5
+    },
+    {
+      "date": "2026-01-23",
+      "equity": 1742.92,
+      "cash": 1742.92,
+      "positions_open": 0,
+      "regime": "RISK-ON",
+      "drawdown_pct": 0.5
+    },
+    {
+      "date": "2026-01-26",
+      "equity": 1742.92,
+      "cash": 1742.92,
+      "positions_open": 0,
+      "regime": "RISK-ON",
+      "drawdown_pct": 0.5
+    },
+    {
+      "date": "2026-01-27",
+      "equity": 1742.92,
+      "cash": 1742.92,
+      "positions_open": 0,
+      "regime": "RISK-ON",
+      "drawdown_pct": 0.5
+    },
+    {
+      "date": "2026-01-28",
+      "equity": 1742.92,
+      "cash": 1742.92,
+      "positions_open": 0,
+      "regime": "RISK-ON",
+      "drawdown_pct": 0.5
+    },
+    {
+      "date": "2026-01-29",
+      "equity": 1742.92,
+      "cash": 1742.92,
+      "positions_open": 0,
+      "regime": "RISK-ON",
+      "drawdown_pct": 0.5
+    },
+    {
+      "date": "2026-01-30",
+      "equity": 1742.92,
+      "cash": 1568.63,
+      "positions_open": 1,
+      "regime": "RISK-ON",
+      "drawdown_pct": 0.5
+    },
+    {
+      "date": "2026-02-02",
+      "equity": 1736.12,
+      "cash": 1568.63,
+      "positions_open": 1,
+      "regime": "RISK-ON",
+      "drawdown_pct": 0.89
+    },
+    {
+      "date": "2026-02-03",
+      "equity": 1756.87,
+      "cash": 1200.0,
+      "positions_open": 2,
+      "regime": "RISK-ON",
+      "drawdown_pct": 0.0
+    },
+    {
+      "date": "2026-02-04",
+      "equity": 1760.78,
+      "cash": 1200.0,
+      "positions_open": 2,
+      "regime": "RISK-ON",
+      "drawdown_pct": 0.0
+    },
+    {
+      "date": "2026-02-05",
+      "equity": 1744.2,
+      "cash": 1200.0,
+      "positions_open": 2,
+      "regime": "TRANSITION",
+      "drawdown_pct": 0.94
+    },
+    {
+      "date": "2026-02-06",
+      "equity": 1768.62,
+      "cash": 1200.0,
+      "positions_open": 2,
+      "regime": "RISK-ON",
+      "drawdown_pct": 0.0
+    },
+    {
+      "date": "2026-02-09",
+      "equity": 1795.56,
+      "cash": 1200.0,
+      "positions_open": 2,
+      "regime": "RISK-ON",
+      "drawdown_pct": 0.0
+    },
+    {
+      "date": "2026-02-10",
+      "equity": 1782.47,
+      "cash": 1200.0,
+      "positions_open": 2,
+      "regime": "RISK-ON",
+      "drawdown_pct": 0.73
+    },
+    {
+      "date": "2026-02-11",
+      "equity": 1800.73,
+      "cash": 1020.0,
+      "positions_open": 2,
+      "regime": "RISK-ON",
+      "drawdown_pct": 0.0
+    },
+    {
+      "date": "2026-02-12",
+      "equity": 1744.05,
+      "cash": 1020.0,
+      "positions_open": 2,
+      "regime": "TRANSITION",
+      "drawdown_pct": 3.15
+    },
+    {
+      "date": "2026-02-13",
+      "equity": 1780.89,
+      "cash": 1020.0,
+      "positions_open": 2,
+      "regime": "TRANSITION",
+      "drawdown_pct": 1.1
+    },
+    {
+      "date": "2026-02-17",
+      "equity": 1728.05,
+      "cash": 1020.0,
+      "positions_open": 2,
+      "regime": "TRANSITION",
+      "drawdown_pct": 4.04
+    },
+    {
+      "date": "2026-02-18",
+      "equity": 1767.04,
+      "cash": 1020.0,
+      "positions_open": 2,
+      "regime": "TRANSITION",
+      "drawdown_pct": 1.87
+    },
+    {
+      "date": "2026-02-19",
+      "equity": 1762.49,
+      "cash": 1020.0,
+      "positions_open": 2,
+      "regime": "TRANSITION",
+      "drawdown_pct": 2.12
+    },
+    {
+      "date": "2026-02-20",
+      "equity": 1793.91,
+      "cash": 1020.0,
+      "positions_open": 2,
+      "regime": "RISK-ON",
+      "drawdown_pct": 0.38
+    },
+    {
+      "date": "2026-02-23",
+      "equity": 1848.37,
+      "cash": 1020.0,
+      "positions_open": 2,
+      "regime": "TRANSITION",
+      "drawdown_pct": 0.0
+    },
+    {
+      "date": "2026-02-24",
+      "equity": 1829.81,
+      "cash": 1020.0,
+      "positions_open": 2,
+      "regime": "TRANSITION",
+      "drawdown_pct": 1.0
+    },
+    {
+      "date": "2026-02-25",
+      "equity": 1848.59,
+      "cash": 1020.0,
+      "positions_open": 2,
+      "regime": "RISK-ON",
+      "drawdown_pct": 0.0
+    },
+    {
+      "date": "2026-02-26",
+      "equity": 1836.55,
+      "cash": 1020.0,
+      "positions_open": 2,
+      "regime": "RISK-ON",
+      "drawdown_pct": 0.65
+    },
+    {
+      "date": "2026-02-27",
+      "equity": 1856.76,
+      "cash": 1020.0,
+      "positions_open": 2,
+      "regime": "TRANSITION",
+      "drawdown_pct": 0.0
+    },
+    {
+      "date": "2026-03-02",
+      "equity": 1880.73,
+      "cash": 1020.0,
+      "positions_open": 2,
+      "regime": "TRANSITION",
+      "drawdown_pct": 0.0
+    },
+    {
+      "date": "2026-03-03",
+      "equity": 1810.02,
+      "cash": 1020.0,
+      "positions_open": 2,
+      "regime": "TRANSITION",
+      "drawdown_pct": 3.76
+    },
+    {
+      "date": "2026-03-04",
+      "equity": 1814.16,
+      "cash": 1020.0,
+      "positions_open": 2,
+      "regime": "TRANSITION",
+      "drawdown_pct": 3.54
+    },
+    {
+      "date": "2026-03-05",
+      "equity": 1793.08,
+      "cash": 1020.0,
+      "positions_open": 2,
+      "regime": "TRANSITION",
+      "drawdown_pct": 4.66
+    },
+    {
+      "date": "2026-03-06",
+      "equity": 1823.19,
+      "cash": 1801.27,
+      "positions_open": 0,
+      "regime": "RISK-OFF",
+      "drawdown_pct": 3.06
+    },
+    {
+      "date": "2026-03-09",
+      "equity": 1801.27,
+      "cash": 1801.27,
+      "positions_open": 0,
+      "regime": "RISK-OFF",
+      "drawdown_pct": 4.23
+    },
+    {
+      "date": "2026-03-10",
+      "equity": 1801.27,
+      "cash": 1801.27,
+      "positions_open": 0,
+      "regime": "TRANSITION",
+      "drawdown_pct": 4.23
+    },
+    {
+      "date": "2026-03-11",
+      "equity": 1801.27,
+      "cash": 1801.27,
+      "positions_open": 0,
+      "regime": "TRANSITION",
+      "drawdown_pct": 4.23
+    },
+    {
+      "date": "2026-03-12",
+      "equity": 1801.27,
+      "cash": 1801.27,
+      "positions_open": 0,
+      "regime": "RISK-OFF",
+      "drawdown_pct": 4.23
+    },
+    {
+      "date": "2026-03-13",
+      "equity": 1801.27,
+      "cash": 1801.27,
+      "positions_open": 0,
+      "regime": "RISK-OFF",
+      "drawdown_pct": 4.23
+    },
+    {
+      "date": "2026-03-16",
+      "equity": 1801.27,
+      "cash": 1801.27,
+      "positions_open": 0,
+      "regime": "TRANSITION",
+      "drawdown_pct": 4.23
+    },
+    {
+      "date": "2026-03-17",
+      "equity": 1801.27,
+      "cash": 1801.27,
+      "positions_open": 0,
+      "regime": "TRANSITION",
+      "drawdown_pct": 4.23
+    },
+    {
+      "date": "2026-03-18",
+      "equity": 1801.27,
+      "cash": 1801.27,
+      "positions_open": 0,
+      "regime": "RISK-OFF",
+      "drawdown_pct": 4.23
+    },
+    {
+      "date": "2026-03-19",
+      "equity": 1801.27,
+      "cash": 1801.27,
+      "positions_open": 0,
+      "regime": "TRANSITION",
+      "drawdown_pct": 4.23
+    },
+    {
+      "date": "2026-03-20",
+      "equity": 1801.27,
+      "cash": 1801.27,
+      "positions_open": 0,
+      "regime": "RISK-OFF",
+      "drawdown_pct": 4.23
+    },
+    {
+      "date": "2026-03-23",
+      "equity": 1801.27,
+      "cash": 1801.27,
+      "positions_open": 0,
+      "regime": "RISK-OFF",
+      "drawdown_pct": 4.23
+    },
+    {
+      "date": "2026-03-24",
+      "equity": 1801.27,
+      "cash": 1801.27,
+      "positions_open": 0,
+      "regime": "RISK-OFF",
+      "drawdown_pct": 4.23
+    },
+    {
+      "date": "2026-03-25",
+      "equity": 1801.27,
+      "cash": 1801.27,
+      "positions_open": 0,
+      "regime": "RISK-OFF",
+      "drawdown_pct": 4.23
+    },
+    {
+      "date": "2026-03-26",
+      "equity": 1801.27,
+      "cash": 1801.27,
+      "positions_open": 0,
+      "regime": "RISK-OFF",
+      "drawdown_pct": 4.23
+    },
+    {
+      "date": "2026-03-27",
+      "equity": 1801.27,
+      "cash": 1801.27,
+      "positions_open": 0,
+      "regime": "RISK-OFF",
+      "drawdown_pct": 4.23
+    },
+    {
+      "date": "2026-03-30",
+      "equity": 1801.27,
+      "cash": 1801.27,
+      "positions_open": 0,
+      "regime": "RISK-OFF",
+      "drawdown_pct": 4.23
+    },
+    {
+      "date": "2026-03-31",
+      "equity": 1801.27,
+      "cash": 1801.27,
+      "positions_open": 0,
+      "regime": "RISK-OFF",
+      "drawdown_pct": 4.23
+    },
+    {
+      "date": "2026-04-01",
+      "equity": 1801.27,
+      "cash": 1801.27,
+      "positions_open": 0,
+      "regime": "TRANSITION",
+      "drawdown_pct": 4.23
+    },
+    {
+      "date": "2026-04-02",
+      "equity": 1801.27,
+      "cash": 1801.27,
+      "positions_open": 0,
+      "regime": "TRANSITION",
+      "drawdown_pct": 4.23
+    },
+    {
+      "date": "2026-04-06",
+      "equity": 1801.27,
+      "cash": 1801.27,
+      "positions_open": 0,
+      "regime": "TRANSITION",
+      "drawdown_pct": 4.23
+    },
+    {
+      "date": "2026-04-07",
+      "equity": 1801.27,
+      "cash": 1801.27,
+      "positions_open": 0,
+      "regime": "RISK-OFF",
+      "drawdown_pct": 4.23
+    },
+    {
+      "date": "2026-04-08",
+      "equity": 1801.27,
+      "cash": 1801.27,
+      "positions_open": 0,
+      "regime": "RISK-ON",
+      "drawdown_pct": 4.23
+    },
+    {
+      "date": "2026-04-09",
+      "equity": 1801.27,
+      "cash": 1801.27,
+      "positions_open": 0,
+      "regime": "RISK-ON",
+      "drawdown_pct": 4.23
+    },
+    {
+      "date": "2026-04-10",
+      "equity": 1801.27,
+      "cash": 1801.27,
+      "positions_open": 0,
+      "regime": "RISK-ON",
+      "drawdown_pct": 4.23
+    },
+    {
+      "date": "2026-04-13",
+      "equity": 1801.27,
+      "cash": 1801.27,
+      "positions_open": 0,
+      "regime": "RISK-ON",
+      "drawdown_pct": 4.23
+    },
+    {
+      "date": "2026-04-14",
+      "equity": 1801.27,
+      "cash": 1801.27,
+      "positions_open": 0,
+      "regime": "RISK-ON",
+      "drawdown_pct": 4.23
+    },
+    {
+      "date": "2026-04-15",
+      "equity": 1801.27,
+      "cash": 1801.27,
+      "positions_open": 0,
+      "regime": "RISK-ON",
+      "drawdown_pct": 4.23
+    },
+    {
+      "date": "2026-04-16",
+      "equity": 1801.27,
+      "cash": 1801.27,
+      "positions_open": 0,
+      "regime": "RISK-ON",
+      "drawdown_pct": 4.23
+    },
+    {
+      "date": "2026-04-17",
+      "equity": 1801.27,
+      "cash": 1801.27,
+      "positions_open": 0,
+      "regime": "RISK-ON",
+      "drawdown_pct": 4.23
+    },
+    {
+      "date": "2026-04-20",
+      "equity": 1801.27,
+      "cash": 1801.27,
+      "positions_open": 0,
+      "regime": "RISK-ON",
+      "drawdown_pct": 4.23
+    },
+    {
+      "date": "2026-04-21",
+      "equity": 1801.27,
+      "cash": 1801.27,
+      "positions_open": 0,
+      "regime": "RISK-ON",
+      "drawdown_pct": 4.23
+    },
+    {
+      "date": "2026-04-22",
+      "equity": 1801.27,
+      "cash": 1801.27,
+      "positions_open": 0,
+      "regime": "RISK-ON",
+      "drawdown_pct": 4.23
+    },
+    {
+      "date": "2026-04-23",
+      "equity": 1801.27,
+      "cash": 1801.27,
+      "positions_open": 0,
+      "regime": "RISK-ON",
+      "drawdown_pct": 4.23
+    },
+    {
+      "date": "2026-04-24",
+      "equity": 1801.27,
+      "cash": 1801.27,
+      "positions_open": 0,
+      "regime": "RISK-ON",
+      "drawdown_pct": 4.23
+    },
+    {
+      "date": "2026-04-27",
+      "equity": 1801.27,
+      "cash": 1801.27,
+      "positions_open": 0,
+      "regime": "RISK-ON",
+      "drawdown_pct": 4.23
+    },
+    {
+      "date": "2026-04-28",
+      "equity": 1801.27,
+      "cash": 1801.27,
+      "positions_open": 0,
+      "regime": "RISK-ON",
+      "drawdown_pct": 4.23
+    },
+    {
+      "date": "2026-04-29",
+      "equity": 1801.27,
+      "cash": 1801.27,
+      "positions_open": 0,
+      "regime": "RISK-ON",
+      "drawdown_pct": 4.23
+    },
+    {
+      "date": "2026-04-30",
+      "equity": 1801.27,
+      "cash": 1621.14,
+      "positions_open": 1,
+      "regime": "RISK-ON",
+      "drawdown_pct": 4.23
+    },
+    {
+      "date": "2026-05-01",
+      "equity": 1799.24,
+      "cash": 1621.14,
+      "positions_open": 1,
+      "regime": "RISK-ON",
+      "drawdown_pct": 4.33
+    },
+    {
+      "date": "2026-05-04",
+      "equity": 1799.3,
+      "cash": 1459.03,
+      "positions_open": 2,
+      "regime": "RISK-ON",
+      "drawdown_pct": 4.33
+    },
+    {
+      "date": "2026-05-05",
+      "equity": 1792.49,
+      "cash": 1459.03,
+      "positions_open": 2,
+      "regime": "RISK-ON",
+      "drawdown_pct": 4.69
+    },
+    {
+      "date": "2026-05-06",
+      "equity": 1831.45,
+      "cash": 1054.15,
+      "positions_open": 2,
+      "regime": "RISK-ON",
+      "drawdown_pct": 2.62
+    },
+    {
+      "date": "2026-05-07",
+      "equity": 1864.67,
+      "cash": 1054.15,
+      "positions_open": 2,
+      "regime": "RISK-ON",
+      "drawdown_pct": 0.85
+    },
+    {
+      "date": "2026-05-08",
+      "equity": 1899.01,
+      "cash": 1054.15,
+      "positions_open": 2,
+      "regime": "RISK-ON",
+      "drawdown_pct": 0.0
+    },
+    {
+      "date": "2026-05-11",
+      "equity": 1938.35,
+      "cash": 1054.15,
+      "positions_open": 2,
+      "regime": "RISK-ON",
+      "drawdown_pct": 0.0
+    },
+    {
+      "date": "2026-05-12",
+      "equity": 1950.78,
+      "cash": 1054.15,
+      "positions_open": 2,
+      "regime": "RISK-ON",
+      "drawdown_pct": 0.0
+    },
+    {
+      "date": "2026-05-13",
+      "equity": 1997.64,
+      "cash": 1054.15,
+      "positions_open": 2,
+      "regime": "RISK-ON",
+      "drawdown_pct": 0.0
+    },
+    {
+      "date": "2026-05-14",
+      "equity": 2089.6,
+      "cash": 2079.26,
+      "positions_open": 0,
+      "regime": "RISK-ON",
+      "drawdown_pct": 0.0
+    },
+    {
+      "date": "2026-05-15",
+      "equity": 2079.26,
+      "cash": 1871.34,
+      "positions_open": 1,
+      "regime": "RISK-ON",
+      "drawdown_pct": 0.49
+    },
+    {
+      "date": "2026-05-18",
+      "equity": 2073.73,
+      "cash": 1684.2,
+      "positions_open": 2,
+      "regime": "RISK-ON",
+      "drawdown_pct": 0.76
+    },
+    {
+      "date": "2026-05-19",
+      "equity": 2067.69,
+      "cash": 1684.2,
+      "positions_open": 2,
+      "regime": "RISK-ON",
+      "drawdown_pct": 1.05
+    },
+    {
+      "date": "2026-05-20",
+      "equity": 2077.78,
+      "cash": 1684.2,
+      "positions_open": 2,
+      "regime": "RISK-ON",
+      "drawdown_pct": 0.57
+    },
+    {
+      "date": "2026-05-21",
+      "equity": 2063.81,
+      "cash": 1684.2,
+      "positions_open": 2,
+      "regime": "RISK-ON",
+      "drawdown_pct": 1.23
+    },
+    {
+      "date": "2026-05-22",
+      "equity": 2049.06,
+      "cash": 1684.2,
+      "positions_open": 2,
+      "regime": "RISK-ON",
+      "drawdown_pct": 1.94
+    },
+    {
+      "date": "2026-05-26",
+      "equity": 2047.4,
+      "cash": 1684.2,
+      "positions_open": 2,
+      "regime": "RISK-ON",
+      "drawdown_pct": 2.02
+    },
+    {
+      "date": "2026-05-27",
+      "equity": 2039.42,
+      "cash": 1684.2,
+      "positions_open": 2,
+      "regime": "RISK-ON",
+      "drawdown_pct": 2.4
+    },
+    {
+      "date": "2026-05-28",
+      "equity": 2045.25,
+      "cash": 1684.2,
+      "positions_open": 2,
+      "regime": "RISK-ON",
+      "drawdown_pct": 2.12
+    },
+    {
+      "date": "2026-05-29",
+      "equity": 2034.27,
+      "cash": 1684.2,
+      "positions_open": 2,
+      "regime": "RISK-ON",
+      "drawdown_pct": 2.65
+    },
+    {
+      "date": "2026-06-01",
+      "equity": 2080.93,
+      "cash": 1684.2,
+      "positions_open": 2,
+      "regime": "RISK-ON",
+      "drawdown_pct": 0.42
+    },
+    {
+      "date": "2026-06-02",
+      "equity": 2075.49,
+      "cash": 1684.2,
+      "positions_open": 2,
+      "regime": "RISK-ON",
+      "drawdown_pct": 0.68
+    },
+    {
+      "date": "2026-06-03",
+      "equity": 2047.01,
+      "cash": 1684.2,
+      "positions_open": 2,
+      "regime": "RISK-ON",
+      "drawdown_pct": 2.04
+    },
+    {
+      "date": "2026-06-04",
+      "equity": 2061.71,
+      "cash": 1684.2,
+      "positions_open": 2,
+      "regime": "RISK-ON",
+      "drawdown_pct": 1.33
+    },
+    {
+      "date": "2026-06-05",
+      "equity": 2013.8,
+      "cash": 1684.2,
+      "positions_open": 2,
+      "regime": "RISK-ON",
+      "drawdown_pct": 3.63
+    },
+    {
+      "date": "2026-06-08",
+      "equity": 2026.31,
+      "cash": 1684.2,
+      "positions_open": 2,
+      "regime": "RISK-ON",
+      "drawdown_pct": 3.03
+    },
+    {
+      "date": "2026-06-09",
+      "equity": 2024.72,
+      "cash": 1684.2,
+      "positions_open": 2,
+      "regime": "RISK-ON",
+      "drawdown_pct": 3.11
+    },
+    {
+      "date": "2026-06-10",
+      "equity": 1997.26,
+      "cash": 1990.02,
+      "positions_open": 0,
+      "regime": "RISK-ON",
+      "drawdown_pct": 4.42
+    },
+    {
+      "date": "2026-06-11",
+      "equity": 1990.02,
+      "cash": 1990.02,
+      "positions_open": 0,
+      "regime": "RISK-ON",
+      "drawdown_pct": 4.77
+    },
+    {
+      "date": "2026-06-12",
+      "equity": 1990.02,
+      "cash": 1990.02,
+      "positions_open": 0,
+      "regime": "RISK-ON",
+      "drawdown_pct": 4.77
+    },
+    {
+      "date": "2026-06-15",
+      "equity": 1990.02,
+      "cash": 1990.02,
+      "positions_open": 0,
+      "regime": "RISK-ON",
+      "drawdown_pct": 4.77
+    },
+    {
+      "date": "2026-06-16",
+      "equity": 1990.02,
+      "cash": 1990.02,
+      "positions_open": 0,
+      "regime": "RISK-ON",
+      "drawdown_pct": 4.77
+    },
+    {
+      "date": "2026-06-17",
+      "equity": 1990.02,
+      "cash": 1990.02,
+      "positions_open": 0,
+      "regime": "RISK-ON",
+      "drawdown_pct": 4.77
+    },
+    {
+      "date": "2026-06-18",
+      "equity": 1990.02,
+      "cash": 1990.02,
+      "positions_open": 0,
+      "regime": "RISK-ON",
+      "drawdown_pct": 4.77
+    },
+    {
+      "date": "2026-06-22",
+      "equity": 1990.02,
+      "cash": 1990.02,
+      "positions_open": 0,
+      "regime": "RISK-ON",
+      "drawdown_pct": 4.77
+    },
+    {
+      "date": "2026-06-23",
+      "equity": 1990.02,
+      "cash": 1990.02,
+      "positions_open": 0,
+      "regime": "RISK-ON",
+      "drawdown_pct": 4.77
+    },
+    {
+      "date": "2026-06-24",
+      "equity": 1990.02,
+      "cash": 1990.02,
+      "positions_open": 0,
+      "regime": "RISK-ON",
+      "drawdown_pct": 4.77
+    },
+    {
+      "date": "2026-06-25",
+      "equity": 1990.02,
+      "cash": 1990.02,
+      "positions_open": 0,
+      "regime": "RISK-ON",
+      "drawdown_pct": 4.77
+    },
+    {
+      "date": "2026-06-26",
+      "equity": 1990.02,
+      "cash": 1990.02,
+      "positions_open": 0,
+      "regime": "TRANSITION",
+      "drawdown_pct": 4.77
+    },
+    {
+      "date": "2026-06-29",
+      "equity": 1990.02,
+      "cash": 1990.02,
+      "positions_open": 0,
+      "regime": "RISK-ON",
+      "drawdown_pct": 4.77
+    },
+    {
+      "date": "2026-06-30",
+      "equity": 1990.02,
+      "cash": 1990.02,
+      "positions_open": 0,
+      "regime": "RISK-ON",
+      "drawdown_pct": 4.77
+    },
+    {
+      "date": "2026-07-01",
+      "equity": 1990.02,
+      "cash": 1990.02,
+      "positions_open": 0,
+      "regime": "RISK-ON",
+      "drawdown_pct": 4.77
+    },
+    {
+      "date": "2026-07-02",
+      "equity": 1990.02,
+      "cash": 1990.02,
+      "positions_open": 0,
+      "regime": "RISK-ON",
+      "drawdown_pct": 4.77
+    },
+    {
+      "date": "2026-07-06",
+      "equity": 1990.02,
+      "cash": 1990.02,
+      "positions_open": 0,
+      "regime": "RISK-ON",
+      "drawdown_pct": 4.77
+    },
+    {
+      "date": "2026-07-07",
+      "equity": 1990.02,
+      "cash": 1990.02,
+      "positions_open": 0,
+      "regime": "RISK-ON",
+      "drawdown_pct": 4.77
+    },
+    {
+      "date": "2026-07-08",
+      "equity": 1990.02,
+      "cash": 1990.02,
+      "positions_open": 0,
+      "regime": "RISK-ON",
+      "drawdown_pct": 4.77
+    },
+    {
+      "date": "2026-07-09",
+      "equity": 1990.02,
+      "cash": 1990.02,
+      "positions_open": 0,
+      "regime": "RISK-ON",
+      "drawdown_pct": 4.77
+    },
+    {
+      "date": "2026-07-10",
+      "equity": 1990.02,
+      "cash": 1990.02,
+      "positions_open": 0,
+      "regime": "RISK-ON",
+      "drawdown_pct": 4.77
+    },
+    {
+      "date": "2026-07-13",
+      "equity": 1990.02,
+      "cash": 1990.02,
+      "positions_open": 0,
+      "regime": "RISK-ON",
+      "drawdown_pct": 4.77
+    },
+    {
+      "date": "2026-07-14",
+      "equity": 1990.02,
+      "cash": 1990.02,
+      "positions_open": 0,
+      "regime": "RISK-ON",
+      "drawdown_pct": 4.77
+    },
+    {
+      "date": "2026-07-15",
+      "equity": 1990.02,
+      "cash": 1990.02,
+      "positions_open": 0,
+      "regime": "RISK-ON",
+      "drawdown_pct": 4.77
+    },
+    {
+      "date": "2026-07-16",
+      "equity": 1990.02,
+      "cash": 1990.02,
+      "positions_open": 0,
+      "regime": "RISK-ON",
+      "drawdown_pct": 4.77
+    },
+    {
+      "date": "2026-07-17",
+      "equity": 1990.02,
+      "cash": 1990.02,
+      "positions_open": 0,
+      "regime": "TRANSITION",
+      "drawdown_pct": 4.77
+    },
+    {
+      "date": "2026-07-20",
+      "equity": 1990.02,
+      "cash": 1990.02,
+      "positions_open": 0,
+      "regime": "TRANSITION",
+      "drawdown_pct": 4.77
+    },
+    {
+      "date": "2026-07-21",
+      "equity": 1990.02,
+      "cash": 1990.02,
+      "positions_open": 0,
+      "regime": "RISK-ON",
+      "drawdown_pct": 4.77
+    },
+    {
+      "date": "2026-07-22",
+      "equity": 1990.02,
+      "cash": 1990.02,
+      "positions_open": 0,
+      "regime": "RISK-ON",
+      "drawdown_pct": 4.77
+    },
+    {
+      "date": "2026-07-23",
+      "equity": 1990.02,
+      "cash": 1990.02,
+      "positions_open": 0,
+      "regime": "TRANSITION",
+      "drawdown_pct": 4.77
+    },
+    {
+      "date": "2026-07-24",
+      "equity": 1990.02,
+      "cash": 1990.02,
+      "positions_open": 0,
+      "regime": "TRANSITION",
+      "drawdown_pct": 4.77
+    },
+    {
+      "date": "2026-07-27",
+      "equity": 1990.02,
+      "cash": 1990.02,
+      "positions_open": 0,
+      "regime": "TRANSITION",
+      "drawdown_pct": 4.77
+    },
+    {
+      "date": "2026-07-28",
+      "equity": 1990.02,
+      "cash": 1990.02,
+      "positions_open": 0,
+      "regime": "TRANSITION",
+      "drawdown_pct": 4.77
+    },
+    {
+      "date": "2026-07-29",
+      "equity": 1990.02,
+      "cash": 1990.02,
+      "positions_open": 0,
+      "regime": "TRANSITION",
+      "drawdown_pct": 4.77
+    },
+    {
+      "date": "2026-07-30",
+      "equity": 1990.02,
+      "cash": 1990.02,
+      "positions_open": 0,
+      "regime": "TRANSITION",
+      "drawdown_pct": 4.77
+    },
+    {
+      "date": "2026-07-31",
+      "equity": 1990.02,
+      "cash": 1990.02,
+      "positions_open": 0,
+      "regime": "RISK-ON",
+      "drawdown_pct": 4.77
+    },
+    {
+      "date": "2026-08-03",
+      "equity": 1990.02,
+      "cash": 1990.02,
+      "positions_open": 0,
+      "regime": "RISK-ON",
+      "drawdown_pct": 4.77
+    },
+    {
+      "date": "2026-08-04",
+      "equity": 1990.02,
+      "cash": 1990.02,
+      "positions_open": 0,
+      "regime": "RISK-ON",
+      "drawdown_pct": 4.77
+    },
+    {
+      "date": "2026-08-05",
+      "equity": 1990.02,
+      "cash": 1990.02,
+      "positions_open": 0,
+      "regime": "RISK-ON",
+      "drawdown_pct": 4.77
+    },
+    {
+      "date": "2026-08-06",
+      "equity": 1990.02,
+      "cash": 1990.02,
+      "positions_open": 0,
+      "regime": "RISK-ON",
+      "drawdown_pct": 4.77
+    },
+    {
+      "date": "2026-08-07",
+      "equity": 1990.02,
+      "cash": 1990.02,
+      "positions_open": 0,
+      "regime": "RISK-ON",
+      "drawdown_pct": 4.77
+    },
+    {
+      "date": "2026-08-10",
+      "equity": 1990.02,
+      "cash": 1990.02,
+      "positions_open": 0,
+      "regime": "RISK-ON",
+      "drawdown_pct": 4.77
+    },
+    {
+      "date": "2026-08-11",
+      "equity": 1990.02,
+      "cash": 1990.02,
+      "positions_open": 0,
+      "regime": "RISK-ON",
+      "drawdown_pct": 4.77
+    },
+    {
+      "date": "2026-08-12",
+      "equity": 1990.02,
+      "cash": 1990.02,
+      "positions_open": 0,
+      "regime": "RISK-ON",
+      "drawdown_pct": 4.77
+    },
+    {
+      "date": "2026-08-13",
+      "equity": 1990.02,
+      "cash": 1990.02,
+      "positions_open": 0,
+      "regime": "RISK-ON",
+      "drawdown_pct": 4.77
+    },
+    {
+      "date": "2026-08-14",
+      "equity": 1990.02,
+      "cash": 1990.02,
+      "positions_open": 0,
+      "regime": "RISK-ON",
+      "drawdown_pct": 4.77
+    },
+    {
+      "date": "2026-08-17",
+      "equity": 1990.02,
+      "cash": 1990.02,
+      "positions_open": 0,
+      "regime": "RISK-ON",
+      "drawdown_pct": 4.77
+    },
+    {
+      "date": "2026-08-18",
+      "equity": 1990.02,
+      "cash": 1990.02,
+      "positions_open": 0,
+      "regime": "RISK-ON",
+      "drawdown_pct": 4.77
+    },
+    {
+      "date": "2026-08-19",
+      "equity": 1990.02,
+      "cash": 1990.02,
+      "positions_open": 0,
+      "regime": "RISK-ON",
+      "drawdown_pct": 4.77
+    },
+    {
+      "date": "2026-08-20",
+      "equity": 1990.02,
+      "cash": 1990.02,
+      "positions_open": 0,
+      "regime": "RISK-ON",
+      "drawdown_pct": 4.77
+    },
+    {
+      "date": "2026-08-21",
+      "equity": 1990.02,
+      "cash": 1990.02,
+      "positions_open": 0,
+      "regime": "RISK-ON",
+      "drawdown_pct": 4.77
+    },
+    {
+      "date": "2026-08-24",
+      "equity": 1990.02,
+      "cash": 1990.02,
+      "positions_open": 0,
+      "regime": "RISK-ON",
+      "drawdown_pct": 4.77
+    },
+    {
+      "date": "2026-08-25",
+      "equity": 1990.02,
+      "cash": 1990.02,
+      "positions_open": 0,
+      "regime": "RISK-ON",
+      "drawdown_pct": 4.77
+    },
+    {
+      "date": "2026-08-26",
+      "equity": 1990.02,
+      "cash": 1990.02,
+      "positions_open": 0,
+      "regime": "RISK-ON",
+      "drawdown_pct": 4.77
+    },
+    {
+      "date": "2026-08-27",
+      "equity": 1990.02,
+      "cash": 1990.02,
+      "positions_open": 0,
+      "regime": "RISK-ON",
+      "drawdown_pct": 4.77
+    },
+    {
+      "date": "2026-08-28",
+      "equity": 1990.02,
+      "cash": 1791.01,
+      "positions_open": 1,
+      "regime": "RISK-ON",
+      "drawdown_pct": 4.77
+    },
+    {
+      "date": "2026-08-31",
+      "equity": 1985.76,
+      "cash": 1611.91,
+      "positions_open": 2,
+      "regime": "RISK-ON",
+      "drawdown_pct": 4.97
+    },
+    {
+      "date": "2026-09-01",
+      "equity": 1972.87,
+      "cash": 1611.91,
+      "positions_open": 2,
+      "regime": "RISK-ON",
+      "drawdown_pct": 5.59
+    },
+    {
+      "date": "2026-09-02",
+      "equity": 1985.77,
+      "cash": 1611.91,
+      "positions_open": 2,
+      "regime": "RISK-ON",
+      "drawdown_pct": 4.97
+    },
+    {
+      "date": "2026-09-03",
+      "equity": 2003.34,
+      "cash": 1370.13,
+      "positions_open": 2,
+      "regime": "RISK-ON",
+      "drawdown_pct": 4.13
+    },
+    {
+      "date": "2026-09-04",
+      "equity": 2006.66,
+      "cash": 1370.13,
+      "positions_open": 2,
+      "regime": "RISK-ON",
+      "drawdown_pct": 3.97
+    },
+    {
+      "date": "2026-09-08",
+      "equity": 1981.14,
+      "cash": 1370.13,
+      "positions_open": 2,
+      "regime": "RISK-ON",
+      "drawdown_pct": 5.19
+    },
+    {
+      "date": "2026-09-09",
+      "equity": 1973.17,
+      "cash": 1370.13,
+      "positions_open": 2,
+      "regime": "RISK-ON",
+      "drawdown_pct": 5.57
+    },
+    {
+      "date": "2026-09-10",
+      "equity": 1944.18,
+      "cash": 1370.13,
+      "positions_open": 2,
+      "regime": "TRANSITION",
+      "drawdown_pct": 6.96
+    },
+    {
+      "date": "2026-09-11",
+      "equity": 1943.99,
+      "cash": 1370.13,
+      "positions_open": 2,
+      "regime": "RISK-ON",
+      "drawdown_pct": 6.97
+    },
+    {
+      "date": "2026-09-14",
+      "equity": 1903.78,
+      "cash": 1713.92,
+      "positions_open": 1,
+      "regime": "RISK-ON",
+      "drawdown_pct": 8.89
+    },
+    {
+      "date": "2026-09-15",
+      "equity": 1895.6,
+      "cash": 1713.92,
+      "positions_open": 1,
+      "regime": "TRANSITION",
+      "drawdown_pct": 9.28
+    },
+    {
+      "date": "2026-09-16",
+      "equity": 1900.41,
+      "cash": 1713.92,
+      "positions_open": 1,
+      "regime": "TRANSITION",
+      "drawdown_pct": 9.05
+    },
+    {
+      "date": "2026-09-17",
+      "equity": 1901.48,
+      "cash": 1713.92,
+      "positions_open": 1,
+      "regime": "RISK-ON",
+      "drawdown_pct": 9.0
+    },
+    {
+      "date": "2026-09-18",
+      "equity": 1903.69,
+      "cash": 1713.92,
+      "positions_open": 1,
+      "regime": "RISK-ON",
+      "drawdown_pct": 8.9
+    },
+    {
+      "date": "2026-09-21",
+      "equity": 1900.09,
+      "cash": 1713.92,
+      "positions_open": 1,
+      "regime": "RISK-ON",
+      "drawdown_pct": 9.07
+    },
+    {
+      "date": "2026-09-22",
+      "equity": 1899.43,
+      "cash": 1713.92,
+      "positions_open": 1,
+      "regime": "RISK-ON",
+      "drawdown_pct": 9.1
+    },
+    {
+      "date": "2026-09-23",
+      "equity": 1894.34,
+      "cash": 1890.52,
+      "positions_open": 0,
+      "regime": "RISK-ON",
+      "drawdown_pct": 9.34
+    },
+    {
+      "date": "2026-09-24",
+      "equity": 1890.52,
+      "cash": 1890.52,
+      "positions_open": 0,
+      "regime": "RISK-ON",
+      "drawdown_pct": 9.53
+    },
+    {
+      "date": "2026-09-25",
+      "equity": 1890.52,
+      "cash": 1890.52,
+      "positions_open": 0,
+      "regime": "RISK-ON",
+      "drawdown_pct": 9.53
+    },
+    {
+      "date": "2026-09-28",
+      "equity": 1890.52,
+      "cash": 1890.52,
+      "positions_open": 0,
+      "regime": "RISK-ON",
+      "drawdown_pct": 9.53
+    },
+    {
+      "date": "2026-09-29",
+      "equity": 1890.52,
+      "cash": 1890.52,
+      "positions_open": 0,
+      "regime": "RISK-ON",
+      "drawdown_pct": 9.53
+    },
+    {
+      "date": "2026-09-30",
+      "equity": 1890.52,
+      "cash": 1890.52,
+      "positions_open": 0,
+      "regime": "RISK-ON",
+      "drawdown_pct": 9.53
+    },
+    {
+      "date": "2026-10-01",
+      "equity": 1890.52,
+      "cash": 1890.52,
+      "positions_open": 0,
+      "regime": "RISK-ON",
+      "drawdown_pct": 9.53
+    },
+    {
+      "date": "2026-10-02",
+      "equity": 1890.52,
+      "cash": 1890.52,
+      "positions_open": 0,
+      "regime": "RISK-ON",
+      "drawdown_pct": 9.53
+    }
+  ],
+  "generated_at": "2026-10-02T19:37:48.762095+00:00"
+}
