@@ -457,3 +457,25 @@ Prefer isolated test **A** (BE delay +1.5R or bar 8), then **D** (funding flatte
 4. The strategy works in the current market regime — but needs DD defense fix for long-term survival
 5. Next step: R10 with no DD defense, just 200MA filter, test 5yr
 
+---
+
+## Round 4C plateau check — chop-filter settings, one step either way
+**Date:** 2026-10-08
+**Engine:** `grok-results/round4c-plateau-sweep/sweep.py` (lab copy of the PR #4 engine; shipped rules unchanged)
+**Period:** 16 Sep 2025 – 16 Sep 2026, same year as the published Round 4C run
+
+### What moved
+Two entry-gate hurdles only, ±25%, because Round 4C never recorded a tuning grid.
+
+| Setting | Looser | Shipped | Tighter |
+|---------|--------|---------|---------|
+| ATR% | block under 0.75× the 20-day typical range | 1.00× | 1.25× |
+| EMA gap | 0.30% | 0.40% | 0.50% |
+
+### Result
+**MIXED.** The EMA-gap step does not change the shipped row (+14.76%, 10 trades, drawdown 8.80%, Sharpe 1.486 in all three EMA columns). Loosening the ATR% hurdle loses about 12–13% on 18–19 trades. Tightening it leaves +0.37% on 3 trades. The published snapshot was +14.90% / 8.46% drawdown / Sharpe 1.564 / 9 trades. This replay is the same neighborhood; the nine cells share one price file, so they compare with each other.
+
+Full table, heatmap, and owner note: `grok-results/round4c-plateau-sweep/`.
+
+R4C remains the paper baseline. This run did not retune it.
+

@@ -1,0 +1,10 @@
+atr_label,atr_median_mult,ema_label,ema_gap_frac,ema_gap_pct,total_return_pct,max_drawdown_pct,num_trades,win_rate_pct,sharpe_ratio,profit_factor,final_equity,total_net_pnl,chop_skips,is_shipped
+looser,0.75,looser,0.003,0.3,-13.31,14.68,19,21.05,-1.32,0.475,1441.67,-223.55,1,False
+looser,0.75,shipped,0.004,0.4,-13.31,14.68,19,21.05,-1.32,0.475,1441.67,-223.55,1,False
+looser,0.75,tighter,0.005,0.5,-11.73,13.12,18,22.22,-1.16,0.513,1468.01,-197.25,2,False
+shipped,1.0,looser,0.003,0.3,14.76,8.8,10,40.0,1.486,2.221,1908.43,242.48,28,False
+shipped,1.0,shipped,0.004,0.4,14.76,8.8,10,40.0,1.486,2.221,1908.43,242.48,28,True
+shipped,1.0,tighter,0.005,0.5,14.76,8.8,10,40.0,1.486,2.221,1908.43,242.48,28,False
+tighter,1.25,looser,0.003,0.3,0.37,4.04,3,33.33,0.099,1.084,1669.17,6.17,59,False
+tighter,1.25,shipped,0.004,0.4,0.37,4.04,3,33.33,0.099,1.084,1669.17,6.17,59,False
+tighter,1.25,tighter,0.005,0.5,0.37,4.04,3,33.33,0.099,1.084,1669.17,6.17,59,False
