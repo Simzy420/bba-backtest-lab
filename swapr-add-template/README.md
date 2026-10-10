@@ -1,27 +1,17 @@
-# Swapr: Add template button
+# Swapr: Add template (phone fix)
 
-## Why upload failed in Dark Command Center
+## Use this URL
+**https://wan22-templates.vercel.app/**
 
-Command Center’s Swapr tab was opening **https://swapr-casey.netlify.app**, which never got the **Add template** button. The button only shipped on the Vercel app.
+Do **not** use `swapr-casey.netlify.app` (no Add template) and do **not** rely on the tiny iframe inside Command Center — open Swapr in its **own tab**.
 
-Also: on iPhone, picking a video/photo **inside the embedded iframe** often does nothing — use **Open Swapr** (new tab).
+## How to add a template on your phone
+1. Open https://wan22-templates.vercel.app/ in Safari/Chrome (new tab).
+2. Tap the dashed **Add template video** box under Motions.
+3. Pick a ~3–5s clip from Photos/Files (larger phone clips are OK; Generate compresses them).
+4. Your clip appears in the rail — select it, upload a still, Generate.
 
-## Working now
-
-1. Open **https://wan22-templates.vercel.app/** (or Command Center → Swapr → **Open Swapr** once that host points here).
-2. Motions → **Add template** → pick a ~3–5s MP4/MOV under ~2.5 MB.
-3. Select the clip → upload your still → Generate.
-
-## Production status
-
-| Host | Add template |
-|------|----------------|
-| https://wan22-templates.vercel.app | Yes |
-| https://swapr-casey.netlify.app | No (old build) |
-| https://simzy420.github.io/command-center/ | Still opens Netlify until `command-center` main is updated |
-| https://command-center-caseylsims-2615.vercel.app | Updated to open Vercel Swapr |
-
-## Apply patches
-
-- `0001-add-template-button.patch` → repo **wan22-templates** (merge branch `cursor/add-template-button-2feb` to `main` for Netlify too)
-- `command-center/0001-point-swapr-at-vercel.patch` → repo **command-center** (points Swapr at the Vercel app)
+## What we fixed (latest deploy)
+- Big tappable **label** drop zone (iOS often ignored the old hidden-input button click)
+- Gallery accepts larger phone videos (up to ~50 MB)
+- Generate compresses oversized clips before upload (API budget ~3.5 MB)
