@@ -1,20 +1,27 @@
 # Swapr: Add template button
 
-This folder holds a ready patch for **Simzy420/wan22-templates** (the Swapr / Become the Character app at https://swapr-casey.netlify.app).
+## Why upload failed in Dark Command Center
 
-This Cloud Agent run is bound to **bba-backtest-lab** and cannot push to `wan22-templates`. Apply the patch in that repo (or re-run the agent there) to ship to Netlify.
+Command Center’s Swapr tab was opening **https://swapr-casey.netlify.app**, which never got the **Add template** button. The button only shipped on the Vercel app.
 
-## What you get
+Also: on iPhone, picking a video/photo **inside the embedded iframe** often does nothing — use **Open Swapr** (new tab).
 
-An **Add template** button next to **Refresh** in the Motions section. Tap it, pick a short MP4/MOV (about 3–5s, max ~2.5 MB), and the clip appears in the gallery for this session. Generate sends it to Runpod as `video_base64`.
+## Working now
 
-## Apply
+1. Open **https://wan22-templates.vercel.app/** (or Command Center → Swapr → **Open Swapr** once that host points here).
+2. Motions → **Add template** → pick a ~3–5s MP4/MOV under ~2.5 MB.
+3. Select the clip → upload your still → Generate.
 
-```bash
-cd wan22-templates
-git apply path/to/0001-add-template-button.patch
-# or: git am 0001-add-template-button.patch
-git push
-```
+## Production status
 
-Netlify (swapr-casey) redeploys from that repo’s main branch.
+| Host | Add template |
+|------|----------------|
+| https://wan22-templates.vercel.app | Yes |
+| https://swapr-casey.netlify.app | No (old build) |
+| https://simzy420.github.io/command-center/ | Still opens Netlify until `command-center` main is updated |
+| https://command-center-caseylsims-2615.vercel.app | Updated to open Vercel Swapr |
+
+## Apply patches
+
+- `0001-add-template-button.patch` → repo **wan22-templates** (merge branch `cursor/add-template-button-2feb` to `main` for Netlify too)
+- `command-center/0001-point-swapr-at-vercel.patch` → repo **command-center** (points Swapr at the Vercel app)
