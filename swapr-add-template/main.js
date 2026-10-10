@@ -22,7 +22,7 @@ const GENERATE_WAIT =
 const EXTEND_WAIT = "Extend uses the Hugging Face Space and can take several minutes. Leave this tab open.";
 
 let templates = [];
-/** Session-only clips from Add template (blob URLs + File handles). */
+/** Custom clips from Add template (blob URLs + File handles), persisted in IndexedDB. */
 let customTemplates = [];
 const customMotionFiles = new Map();
 let selectedId = null;
@@ -34,14 +34,22 @@ let sessionId = "";
 /** Runpod job id of the Generate in flight (Vercel). Used by Stop GPU. */
 let currentRunpodJob = "";
 let lastResultBlob = null;
-/** Keep under Netlify/Vercel multipart limits (matches server MAX_MOTION_BYTES). */
-const MAX_CUSTOM_MOTION_BYTES = 2_500_000;
+/** Gallery can hold larger phone clips; Generate compresses down to the API budget. */
+const MAX_GALLERY_MOTION_BYTES = 50_000_000;
+/** Matches server MAX_MOTION_BYTES for /api/generate multipart. */
+const MAX_UPLOAD_MOTION_BYTES = 3_500_000;
+const MAX_SAVED_CUSTOM = 6;
+const STORE_DB = "swapr-btc-v1";
+const STORE_META = "meta";
+const STORE_BLOBS = "blobs";
+let persistTimer = 0;
+let bootDone = false;
 
 const els = {
   rail: document.getElementById("template-rail"),
   status: document.getElementById("templates-status"),
   refresh: document.getElementById("btn-refresh"),
-  addTemplate: document.getElementById("btn-add-template"),
+  addTemplateZone: document.getElementById("add-template-zone"),
   templateInput: document.getElementById("template-input"),
   selectedPanel: document.getElementById("selected-panel"),
   selectedTitle: document.getElementById("selected-title"),
@@ -53,6 +61,7 @@ const els = {
   photoInput: document.getElementById("photo-input"),
   photoPreview: document.getElementById("photo-preview"),
   prompt: document.getElementById("prompt"),
+  readyStrip: document.getElementById("ready-strip"),
   btnGen: document.getElementById("btn-generate"),
   genStatus: document.getElementById("gen-status"),
   resultPanel: document.getElementById("result-panel"),
@@ -70,6 +79,159 @@ const els = {
   howtoDialog: document.getElementById("howto-dialog"),
   howtoClose: document.getElementById("btn-howto-close"),
 };
+
+function openStore() {
+  return new Promise((resolve, reject) => {
+    if (!window.indexedDB) {
+      reject(new Error("IndexedDB unavailable"));
+      return;
+    }
+    const req = indexedDB.open(STORE_DB, 1);
+    req.onupgradeneeded = () => {
+      const db = req.result;
+      if (!db.objectStoreNames.contains(STORE_META)) db.createObjectStore(STORE_META);
+      if (!db.objectStoreNames.contains(STORE_BLOBS)) db.createObjectStore(STORE_BLOBS);
+    };
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = () => reject(req.error || new Error("IndexedDB open failed"));
+  });
+}
+
+function idbGet(store, key) {
+  return openStore().then(
+    (db) =>
+      new Promise((resolve, reject) => {
+        const tx = db.transaction(store, "readonly");
+        const req = tx.objectStore(store).get(key);
+        req.onsuccess = () => resolve(req.result);
+        req.onerror = () => reject(req.error);
+      })
+  );
+}
+
+function idbPut(store, key, value) {
+  return openStore().then(
+    (db) =>
+      new Promise((resolve, reject) => {
+        const tx = db.transaction(store, "readwrite");
+        tx.objectStore(store).put(value, key);
+        tx.oncomplete = () => resolve();
+        tx.onerror = () => reject(tx.error);
+      })
+  );
+}
+
+function idbDelete(store, key) {
+  return openStore().then(
+    (db) =>
+      new Promise((resolve, reject) => {
+        const tx = db.transaction(store, "readwrite");
+        tx.objectStore(store).delete(key);
+        tx.oncomplete = () => resolve();
+        tx.onerror = () => reject(tx.error);
+      })
+  );
+}
+
+function schedulePersist() {
+  if (!bootDone) return;
+  clearTimeout(persistTimer);
+  persistTimer = setTimeout(() => {
+    void persistSession().catch((err) => console.warn("persistSession", err));
+  }, 250);
+}
+
+async function persistSession() {
+  const customs = [];
+  for (const entry of customTemplates.slice(0, MAX_SAVED_CUSTOM)) {
+    const file = customMotionFiles.get(entry.id);
+    if (!file) continue;
+    customs.push({
+      id: entry.id,
+      title: entry.title,
+      description: entry.description,
+      duration_s: entry.duration_s,
+      category: entry.category,
+      tags: entry.tags,
+      source: entry.source,
+      custom: true,
+      name: file.name || `${entry.id}.mp4`,
+      type: file.type || "video/mp4",
+      size: file.size,
+    });
+    await idbPut(STORE_BLOBS, `motion:${entry.id}`, file);
+  }
+  if (photoFile) {
+    await idbPut(STORE_BLOBS, "photo", {
+      name: photoFile.name || "photo.jpg",
+      type: photoFile.type || "image/jpeg",
+      blob: photoFile,
+    });
+  } else {
+    await idbDelete(STORE_BLOBS, "photo").catch(() => {});
+  }
+  await idbPut(STORE_META, "session", {
+    selectedId,
+    prompt: els.prompt?.value || "",
+    customs,
+    savedAt: Date.now(),
+  });
+}
+
+async function restoreSession() {
+  try {
+    const meta = await idbGet(STORE_META, "session");
+    if (!meta || typeof meta !== "object") return;
+    if (typeof meta.prompt === "string" && els.prompt) els.prompt.value = meta.prompt;
+    const list = Array.isArray(meta.customs) ? meta.customs : [];
+    const restored = [];
+    for (const item of list) {
+      if (!item?.id) continue;
+      const blob = await idbGet(STORE_BLOBS, `motion:${item.id}`);
+      if (!blob) continue;
+      const file =
+        blob instanceof File
+          ? blob
+          : new File([blob], item.name || `${item.id}.mp4`, {
+              type: item.type || (blob.type || "video/mp4"),
+            });
+      const blobUrl = URL.createObjectURL(file);
+      customMotionFiles.set(item.id, file);
+      restored.push({
+        id: item.id,
+        title: item.title || slugTitle(item.name) || "My clip",
+        description: item.description || `Your clip · saved on this phone`,
+        video_path: "",
+        blob_url: blobUrl,
+        duration_s: item.duration_s ?? 4,
+        tags: item.tags || ["custom"],
+        category: item.category || "custom",
+        thumbnail: null,
+        source: item.source || "Saved on this phone",
+        custom: true,
+      });
+    }
+    customTemplates = restored;
+    const photoRec = await idbGet(STORE_BLOBS, "photo");
+    if (photoRec?.blob) {
+      const file =
+        photoRec.blob instanceof File
+          ? photoRec.blob
+          : new File([photoRec.blob], photoRec.name || "photo.jpg", {
+              type: photoRec.type || photoRec.blob.type || "image/jpeg",
+            });
+      photoFile = file;
+      if (photoBlobUrl) URL.revokeObjectURL(photoBlobUrl);
+      photoBlobUrl = URL.createObjectURL(file);
+      els.photoPreview.src = photoBlobUrl;
+      els.photoPreview.hidden = false;
+      els.uploadInner.hidden = true;
+    }
+    if (meta.selectedId) selectedId = meta.selectedId;
+  } catch (err) {
+    console.warn("restoreSession", err);
+  }
+}
 
 const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 let playObserver = null;
@@ -147,40 +309,183 @@ async function probeDuration(file, blobUrl) {
   });
 }
 
-async function addCustomTemplate(file) {
-  if (!file) return;
+function mb(bytes) {
+  return (bytes / 1024 / 1024).toFixed(1);
+}
+
+function looksLikeVideo(file) {
   const type = String(file.type || "").toLowerCase();
   const name = String(file.name || "").toLowerCase();
-  const looksVideo = type.startsWith("video/") || /\.(mp4|mov|m4v|webm)$/i.test(name);
-  if (!looksVideo) {
-    els.status.textContent = "Choose an MP4 or MOV motion clip.";
+  if (type.startsWith("video/")) return true;
+  if (/\.(mp4|mov|m4v|webm|qt)$/i.test(name)) return true;
+  // iOS Photos often omits type/extension when the picker already filtered to video.
+  if (!type || type === "application/octet-stream") return true;
+  return false;
+}
+
+function setTemplateStatus(msg, { alertUser = false } = {}) {
+  els.status.textContent = msg;
+  if (alertUser && typeof window.alert === "function") {
+    try {
+      window.alert(msg);
+    } catch {
+      /* ignore */
+    }
+  }
+}
+
+/**
+ * Re-encode a large phone clip so Generate fits the host body limit.
+ * Falls back to the original file if MediaRecorder is unavailable.
+ */
+async function compressMotionForUpload(file, maxBytes) {
+  if (!file || file.size <= maxBytes) return file;
+  if (typeof MediaRecorder === "undefined" || typeof HTMLCanvasElement === "undefined") {
+    return file;
+  }
+  const url = URL.createObjectURL(file);
+  try {
+    const video = document.createElement("video");
+    video.muted = true;
+    video.defaultMuted = true;
+    video.playsInline = true;
+    video.setAttribute("playsinline", "");
+    video.preload = "auto";
+    video.src = url;
+    await new Promise((resolve, reject) => {
+      const timer = setTimeout(() => reject(new Error("metadata timeout")), 12000);
+      video.addEventListener(
+        "loadeddata",
+        () => {
+          clearTimeout(timer);
+          resolve();
+        },
+        { once: true }
+      );
+      video.addEventListener(
+        "error",
+        () => {
+          clearTimeout(timer);
+          reject(new Error("video load failed"));
+        },
+        { once: true }
+      );
+    });
+    const maxEdge = 640;
+    let w = video.videoWidth || 480;
+    let h = video.videoHeight || 832;
+    const scale = Math.min(1, maxEdge / Math.max(w, h));
+    w = Math.max(2, Math.round((w * scale) / 2) * 2);
+    h = Math.max(2, Math.round((h * scale) / 2) * 2);
+    const canvas = document.createElement("canvas");
+    canvas.width = w;
+    canvas.height = h;
+    const ctx = canvas.getContext("2d");
+    if (!ctx || typeof canvas.captureStream !== "function") return file;
+    const stream = canvas.captureStream(12);
+    const candidates = [
+      "video/mp4",
+      "video/webm;codecs=vp8",
+      "video/webm",
+    ];
+    const mime = candidates.find((t) => {
+      try {
+        return MediaRecorder.isTypeSupported(t);
+      } catch {
+        return false;
+      }
+    });
+    if (!mime) return file;
+    const recorder = new MediaRecorder(stream, {
+      mimeType: mime,
+      videoBitsPerSecond: 700_000,
+    });
+    const chunks = [];
+    recorder.ondataavailable = (e) => {
+      if (e.data && e.data.size) chunks.push(e.data);
+    };
+    const stopped = new Promise((resolve) => {
+      recorder.addEventListener("stop", () => resolve(), { once: true });
+    });
+    video.currentTime = 0;
+    recorder.start(200);
+    await video.play();
+    let raf = 0;
+    const draw = () => {
+      if (video.ended || video.paused) return;
+      ctx.drawImage(video, 0, 0, w, h);
+      raf = requestAnimationFrame(draw);
+    };
+    draw();
+    await new Promise((resolve) => {
+      const timer = setTimeout(resolve, Math.min(12000, (Number(video.duration) || 5) * 1000 + 500));
+      video.addEventListener(
+        "ended",
+        () => {
+          clearTimeout(timer);
+          resolve();
+        },
+        { once: true }
+      );
+    });
+    cancelAnimationFrame(raf);
+    if (recorder.state !== "inactive") recorder.stop();
+    await stopped;
+    stream.getTracks().forEach((t) => t.stop());
+    const blob = new Blob(chunks, { type: mime });
+    if (blob.size < 1000 || blob.size > maxBytes) return file;
+    const ext = mime.includes("mp4") ? "mp4" : "webm";
+    return new File([blob], `motion-compressed.${ext}`, {
+      type: mime.includes("mp4") ? "video/mp4" : "video/webm",
+    });
+  } catch (err) {
+    console.warn("compressMotionForUpload", err);
+    return file;
+  } finally {
+    URL.revokeObjectURL(url);
+  }
+}
+
+async function addCustomTemplate(file) {
+  if (!file) return;
+  if (!looksLikeVideo(file)) {
+    setTemplateStatus("Choose a video clip (MP4 or MOV).", { alertUser: true });
     return;
   }
-  if (file.size > MAX_CUSTOM_MOTION_BYTES) {
-    els.status.textContent = `That clip is too large (max ${Math.round(MAX_CUSTOM_MOTION_BYTES / 1024 / 1024)} MB). Trim it to about 3–5 seconds.`;
+  if (file.size > MAX_GALLERY_MOTION_BYTES) {
+    setTemplateStatus(
+      `That clip is ${mb(file.size)} MB (max ${Math.round(MAX_GALLERY_MOTION_BYTES / 1024 / 1024)} MB). Trim it to about 3–5 seconds and try again.`,
+      { alertUser: true }
+    );
     return;
   }
+  els.status.textContent = `Adding ${slugTitle(file.name)} (${mb(file.size)} MB)…`;
   const id = `custom-${Date.now().toString(36)}`;
   const blobUrl = URL.createObjectURL(file);
   const duration = await probeDuration(file, blobUrl);
   const entry = {
     id,
-    title: slugTitle(file.name),
-    description: "Your clip — available in this browser session.",
+    title: slugTitle(file.name) || "My clip",
+    description: `Your clip (${mb(file.size)} MB) — saved on this phone.`,
     video_path: "",
     blob_url: blobUrl,
     duration_s: duration ?? 4,
     tags: ["custom"],
     category: "custom",
     thumbnail: null,
-    source: "Added on device",
+    source: "Saved on this phone",
     custom: true,
   };
   customMotionFiles.set(id, file);
-  customTemplates = [entry, ...customTemplates];
+  customTemplates = [entry, ...customTemplates].slice(0, MAX_SAVED_CUSTOM);
   const list = mergedTemplates();
-  renderRail(list, `${list.length} motions · your clip is ready`);
+  const note =
+    file.size > MAX_UPLOAD_MOTION_BYTES
+      ? `${list.length} motions · yours is ready (will compress on Generate)`
+      : `${list.length} motions · your clip is ready · saved on this phone`;
+  renderRail(list, note);
   selectTemplate(id);
+  schedulePersist();
 }
 
 /** Read the motion clip's pixel size so the worker and the still use its aspect. */
@@ -226,8 +531,44 @@ function workerSize(size) {
   return { width: 640, height: 640 };
 }
 
+let generateBusy = false;
+
+function updateReadyStrip() {
+  if (!els.readyStrip) return;
+  const m = selectedId ? "✓ Motion" : "1) Pick a motion";
+  const p = photoFile ? "✓ Photo" : "2) Add your photo";
+  const g = selectedId && photoFile ? "3) Tap Generate ↓" : "3) Generate";
+  els.readyStrip.textContent = `${m} · ${p} · ${g}`;
+  els.readyStrip.classList.toggle("is-go", Boolean(selectedId && photoFile && !generateBusy));
+}
+
 function updateGenerateEnabled() {
-  els.btnGen.disabled = !(selectedId && photoFile);
+  const ready = Boolean(selectedId && photoFile) && !generateBusy;
+  // Never HTML-disable Generate — iPhone often swallows taps on disabled buttons.
+  els.btnGen.disabled = false;
+  els.btnGen.classList.toggle("is-ready", ready);
+  els.btnGen.setAttribute("aria-disabled", ready ? "false" : "true");
+  if (generateBusy) {
+    els.btnGen.textContent = "Working…";
+  } else if (selectedId && photoFile) {
+    els.btnGen.textContent = "Generate";
+  } else if (!selectedId) {
+    els.btnGen.textContent = "Pick a motion first";
+  } else {
+    els.btnGen.textContent = "Add your photo to Generate";
+  }
+  updateReadyStrip();
+}
+
+function looksLikeImage(file) {
+  if (!file) return false;
+  const type = String(file.type || "").toLowerCase();
+  const name = String(file.name || "").toLowerCase();
+  if (type.startsWith("image/")) return true;
+  if (/\.(jpe?g|png|gif|webp|heic|heif|bmp)$/i.test(name)) return true;
+  // iOS Photos often omits type when the picker already filtered to images.
+  if (!type || type === "application/octet-stream") return true;
+  return false;
 }
 
 function armVideo(vid) {
@@ -283,9 +624,11 @@ function lockUpload() {
   els.uploadSection.classList.add("is-locked");
   els.uploadSection.classList.remove("is-ready");
   els.uploadSection.setAttribute("aria-disabled", "true");
-  els.photoInput.disabled = true;
+  // Do not disable the file input — iOS Safari often won't open it again after re-enable.
+  els.photoInput.disabled = false;
   els.uploadHint.textContent = "Pick a motion above to unlock this step.";
   els.selectedPanel.hidden = true;
+  updateGenerateEnabled();
 }
 
 function focusUpload() {
@@ -296,6 +639,7 @@ function focusUpload() {
   els.uploadHint.textContent = "Upload a still of the person who should do this motion.";
   els.uploadSection.scrollIntoView({ behavior: reduceMotion ? "auto" : "smooth", block: "center" });
   els.uploadSection.focus({ preventScroll: true });
+  updateGenerateEnabled();
 }
 
 async function loadCatalog() {
@@ -357,19 +701,37 @@ function selectTemplate(id, opts = {}) {
   if (!t) {
     lockUpload();
     updateGenerateEnabled();
+    schedulePersist();
     return;
   }
+  els.uploadSection.classList.remove("is-locked");
+  els.uploadSection.classList.add("is-ready");
+  els.uploadSection.setAttribute("aria-disabled", "false");
+  els.photoInput.disabled = false;
+  els.uploadHint.textContent = photoFile
+    ? "Photo saved on this phone — tap to replace, or tap Generate."
+    : "Upload a still of the person who should do this motion.";
   els.selectedPanel.hidden = false;
   els.selectedTitle.textContent = t.title || t.id;
   els.selectedDesc.textContent = t.description || "";
   syncPlayback();
   updateGenerateEnabled();
-  if (scrollUpload) focusUpload();
+  schedulePersist();
+  if (scrollUpload && !photoFile) focusUpload();
+  else if (scrollUpload && photoFile) {
+    els.btnGen.scrollIntoView({ behavior: reduceMotion ? "auto" : "smooth", block: "center" });
+  }
 }
 
 function setPhoto(file) {
-  if (!selectedId || els.photoInput.disabled) return;
-  if (!file || !file.type.startsWith("image/")) return;
+  if (!selectedId) {
+    els.genStatus.textContent = "Pick a motion template first, then upload your photo.";
+    return;
+  }
+  if (!looksLikeImage(file)) {
+    els.genStatus.textContent = "Choose a photo (JPG, PNG, or HEIC).";
+    return;
+  }
   photoFile = file;
   if (photoBlobUrl) URL.revokeObjectURL(photoBlobUrl);
   photoBlobUrl = URL.createObjectURL(file);
@@ -377,11 +739,21 @@ function setPhoto(file) {
   els.photoPreview.hidden = false;
   els.uploadInner.hidden = true;
   updateGenerateEnabled();
+  schedulePersist();
+  els.genStatus.textContent = "Photo saved — tap Generate.";
+  els.btnGen.scrollIntoView({ behavior: reduceMotion ? "auto" : "smooth", block: "center" });
 }
 
 els.photoInput.addEventListener("change", () => {
   const f = els.photoInput.files && els.photoInput.files[0];
+  els.photoInput.value = "";
   if (f) setPhoto(f);
+});
+els.uploadZone.addEventListener("click", (e) => {
+  if (!selectedId) {
+    e.preventDefault();
+    els.genStatus.textContent = "Pick a motion template first, then upload your photo.";
+  }
 });
 els.uploadZone.addEventListener("dragover", (e) => {
   if (!selectedId) return;
@@ -398,10 +770,20 @@ els.uploadZone.addEventListener("drop", (e) => {
 });
 
 els.refresh.addEventListener("click", () => loadCatalog());
-els.addTemplate?.addEventListener("click", () => els.templateInput?.click());
 els.templateInput?.addEventListener("change", () => {
   const f = els.templateInput.files && els.templateInput.files[0];
   els.templateInput.value = "";
+  if (f) void addCustomTemplate(f);
+});
+els.addTemplateZone?.addEventListener("dragover", (e) => {
+  e.preventDefault();
+  els.addTemplateZone.classList.add("drag");
+});
+els.addTemplateZone?.addEventListener("dragleave", () => els.addTemplateZone.classList.remove("drag"));
+els.addTemplateZone?.addEventListener("drop", (e) => {
+  e.preventDefault();
+  els.addTemplateZone.classList.remove("drag");
+  const f = e.dataTransfer?.files && e.dataTransfer.files[0];
   if (f) void addCustomTemplate(f);
 });
 window.addEventListener("scroll", syncPlayback, { passive: true });
@@ -427,16 +809,18 @@ els.extendTarget.addEventListener("input", () => {
 });
 
 function setBusy(msg) {
+  generateBusy = true;
   els.genStatus.textContent = msg || "";
-  els.btnGen.disabled = true;
   els.btnExtend.disabled = true;
   els.btnAuto.disabled = true;
+  updateGenerateEnabled();
 }
 
 function clearBusy() {
-  updateGenerateEnabled();
+  generateBusy = false;
   els.btnExtend.disabled = false;
   els.btnAuto.disabled = false;
+  updateGenerateEnabled();
 }
 
 function showResult(fileOrUrl) {
@@ -662,16 +1046,39 @@ async function callSpace(apiName, payload) {
   return data;
 }
 
-els.btnGen.addEventListener("click", async () => {
-  if (!selectedId || !photoFile) return;
+async function runGenerate() {
+  if (generateBusy) return;
+  if (!selectedId) {
+    els.genStatus.textContent = "Pick a motion template first.";
+    els.rail?.scrollIntoView({ behavior: reduceMotion ? "auto" : "smooth", block: "center" });
+    return;
+  }
+  if (!photoFile) {
+    els.genStatus.textContent = "Upload your still photo first, then tap Generate.";
+    focusUpload();
+    return;
+  }
   const selected = mergedTemplates().find((t) => t.id === selectedId);
-  const motion = selected?.custom ? customMotionFiles.get(selectedId) : null;
+  let motion = selected?.custom ? customMotionFiles.get(selectedId) : null;
   if (selected?.custom && !motion) {
     els.genStatus.textContent = "That custom clip is missing. Add the template again.";
     return;
   }
   setBusy(`Queuing on Runpod… ${GENERATE_WAIT}`);
   try {
+    if (motion && motion.size > MAX_UPLOAD_MOTION_BYTES) {
+      setBusy(`Compressing your ${mb(motion.size)} MB clip for upload…`);
+      const compressed = await compressMotionForUpload(motion, MAX_UPLOAD_MOTION_BYTES);
+      if (compressed.size > MAX_UPLOAD_MOTION_BYTES) {
+        throw new Error(
+          `Your motion clip is ${mb(motion.size)} MB after pick. Trim it to about 3–5 seconds (under ${mb(MAX_UPLOAD_MOTION_BYTES)} MB) in Photos, then Add template again.`
+        );
+      }
+      motion = compressed;
+      customMotionFiles.set(selectedId, compressed);
+      schedulePersist();
+      setBusy(`Queuing on Runpod… ${GENERATE_WAIT}`);
+    }
     const size = await templateSize(selected);
     const args = generateArgs(size);
     if (USE_PROXY) {
@@ -707,7 +1114,31 @@ els.btnGen.addEventListener("click", async () => {
   } finally {
     clearBusy();
   }
-});
+}
+
+/** iOS Safari sometimes drops click; pointerup + click both route here once. */
+let lastGenTap = 0;
+function onGeneratePointer(e) {
+  if (e && e.type === "pointerup" && e.pointerType === "mouse" && e.button !== 0) return;
+  const now = Date.now();
+  if (now - lastGenTap < 500) return;
+  lastGenTap = now;
+  if (e) {
+    try {
+      e.preventDefault();
+    } catch {
+      /* ignore */
+    }
+  }
+  void runGenerate();
+}
+els.btnGen.addEventListener("pointerup", onGeneratePointer);
+els.btnGen.addEventListener("click", onGeneratePointer);
+els.btnGen.addEventListener("touchend", (e) => {
+  // Fallback when pointer events are unavailable.
+  if (window.PointerEvent) return;
+  onGeneratePointer(e);
+}, { passive: false });
 
 async function extendOnce(auto) {
   if (!lastResultUrl) {
@@ -786,6 +1217,28 @@ els.btnStop?.addEventListener("click", async () => {
   }
 });
 
+els.prompt?.addEventListener("change", schedulePersist);
+els.prompt?.addEventListener("blur", schedulePersist);
+
 refreshBalance();
 setInterval(refreshBalance, 30000);
-loadCatalog();
+
+(async function boot() {
+  updateGenerateEnabled();
+  await restoreSession();
+  bootDone = true;
+  updateGenerateEnabled();
+  await loadCatalog();
+  if (selectedId && mergedTemplates().some((t) => t.id === selectedId)) {
+    selectTemplate(selectedId, { scrollUpload: false });
+    if (photoFile) {
+      els.uploadSection.classList.remove("is-locked");
+      els.uploadSection.classList.add("is-ready");
+      els.genStatus.textContent = "Restored your template and photo — tap Generate.";
+    }
+  } else if (customTemplates.length) {
+    const note = `${mergedTemplates().length} motions · restored ${customTemplates.length} of yours`;
+    renderRail(mergedTemplates(), note);
+  }
+  schedulePersist();
+})();

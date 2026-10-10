@@ -1,13 +1,17 @@
-# Swapr phone fixes
+# Swapr / Become the Character — phone fixes
 
-**Use:** https://wan22-templates.vercel.app/  
-Open in its **own tab**. Hard-close old tabs first.
+**Live:** https://wan22-templates.vercel.app/
 
-## Generate not tapping
-Fixed: the button used to stay disabled (looked dead) when iPhone Photos omitted an image MIME type. It now always responds:
-- No motion → “Pick a motion first”
-- Motion, no photo → “Add your photo to Generate”
-- Both ready → “Generate” (then tap it)
+## What’s live now
+- **Add template video** + photo pickers use full-zone overlays (works on iPhone)
+- **Generate** stays tappable (pointerup + click); readiness strip shows motion/photo status
+- **Persistence:** custom templates + still photo + selection saved in IndexedDB on this phone — still there after you leave and come back
 
-## Add template
-Tap the dashed **Add template video** box, pick a ~3–5s clip, select it, upload still, tap **Generate**.
+## How to use on phone
+1. Open https://wan22-templates.vercel.app/ in its **own Safari/Chrome tab** (not the small Command Center frame).
+2. Pick a motion (or Add template video).
+3. Upload your photo.
+4. Tap **Generate** (status should say “Photo saved — tap Generate”).
+5. Leave the tab open; first run can take a few minutes while Runpod starts.
+
+Your template and photo are kept on that phone’s browser storage for next time.
