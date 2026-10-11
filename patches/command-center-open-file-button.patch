@@ -1,0 +1,294 @@
+From 327ca74de35ec444fae7a52b2d485f0f113ec979 Mon Sep 17 00:00:00 2001
+From: Cursor Agent <cursoragent@cursor.com>
+Date: Sun, 11 Oct 2026 05:08:32 +0000
+Subject: [PATCH 1/2] Add Open File button to Files widget for device downloads
+
+Lets the Files section open the phone Downloads/Files picker and import
+selected text files into the current folder for reading and editing.
+---
+ README.md                              |  2 +-
+ src/adapters/files/openLocal.test.ts   | 31 +++++++++
+ src/adapters/files/openLocal.ts        | 88 ++++++++++++++++++++++++++
+ src/components/widgets/FilesWidget.tsx | 54 +++++++++++++++-
+ 4 files changed, 171 insertions(+), 4 deletions(-)
+ create mode 100644 src/adapters/files/openLocal.test.ts
+ create mode 100644 src/adapters/files/openLocal.ts
+
+diff --git a/README.md b/README.md
+index c0ddb71..eff01bd 100644
+--- a/README.md
++++ b/README.md
+@@ -345,7 +345,7 @@ npm run dev
+ 
+ ## Files
+ 
+-The Files widget on Home is the file section. Tap a file to open it and read the contents. **Save** writes the text back into that file (or creates one from **File** after you name it, then Save). Notes stay in this browser’s `cc.v1.files` storage. They are not uploaded to GitHub Pages, Vercel, or the chat Space, so a stranger on the public site cannot read them.
++The Files widget on Home is the file section. Tap a file to open it and read the contents. **Open File** brings up this phone’s Downloads / Files picker so you can pull text downloads back into the current folder; the first pick opens for reading. **Save** writes the text back into that file (or creates one from **File** after you name it, then Save). Notes stay in this browser’s `cc.v1.files` storage. They are not uploaded to GitHub Pages, Vercel, or the chat Space, so a stranger on the public site cannot read them. Images and videos belong in Photo gallery, not Open File.
+ 
+ **Send** hands the open file off the app. When the phone browser can share, it opens the system share sheet (Messages, Mail, AirDrop, and the other apps on that phone). When it cannot, the file downloads into that browser’s downloads. A video clip stored as a link is shared as that link; the clip bytes stay where the link points. There is no cloud file account and no secret.
+ 
+diff --git a/src/adapters/files/openLocal.test.ts b/src/adapters/files/openLocal.test.ts
+new file mode 100644
+index 0000000..208219a
+--- /dev/null
++++ b/src/adapters/files/openLocal.test.ts
+@@ -0,0 +1,31 @@
++import assert from 'node:assert/strict';
++import test from 'node:test';
++import { MAX_FILE_CHARS } from '../../store/fileDocument.ts';
++import { isLikelyTextFile, openLocalResultMessage, readLocalTextFiles } from './openLocal.ts';
++
++test('open file accepts common text downloads and skips media', () => {
++  assert.equal(isLikelyTextFile({ name: 'notes.txt', type: 'text/plain' }), true);
++  assert.equal(isLikelyTextFile({ name: 'plan.md', type: '' }), true);
++  assert.equal(isLikelyTextFile({ name: 'data.json', type: 'application/json' }), true);
++  assert.equal(isLikelyTextFile({ name: 'clip.mp4', type: 'video/mp4' }), false);
++  assert.equal(isLikelyTextFile({ name: 'shot.png', type: 'image/png' }), false);
++});
++
++test('open file messages cover empty, success, and skipped picks', () => {
++  assert.match(openLocalResultMessage(0, 0), /No files selected/);
++  assert.match(openLocalResultMessage(0, 2), /No files opened/);
++  assert.match(openLocalResultMessage(1, 0), /downloads/);
++  assert.match(openLocalResultMessage(2, 1), /Opened 2/);
++});
++
++test('readLocalTextFiles imports text and skips oversized or binary picks', async () => {
++  const ok = new File(['Buy milk'], 'list.txt', { type: 'text/plain' });
++  const media = new File(['xxxx'], 'clip.mp4', { type: 'video/mp4' });
++  const huge = new File(['a'.repeat(MAX_FILE_CHARS + 1)], 'big.txt', { type: 'text/plain' });
++  const result = await readLocalTextFiles([ok, media, huge]);
++  assert.equal(result.opened.length, 1);
++  assert.equal(result.opened[0]?.name, 'list.txt');
++  assert.equal(result.opened[0]?.content, 'Buy milk');
++  assert.equal(result.skipped, 2);
++  assert.match(result.message, /Opened 1/);
++});
+diff --git a/src/adapters/files/openLocal.ts b/src/adapters/files/openLocal.ts
+new file mode 100644
+index 0000000..df558a7
+--- /dev/null
++++ b/src/adapters/files/openLocal.ts
+@@ -0,0 +1,88 @@
++import { MAX_FILE_CHARS } from '../../store/fileDocument.ts';
++
++export interface OpenLocalFile {
++  name: string;
++  content: string;
++}
++
++export interface OpenLocalResult {
++  opened: OpenLocalFile[];
++  skipped: number;
++  message: string;
++}
++
++/** Keep downloaded / device picks as plain text notes in Files. */
++export function isLikelyTextFile(file: { name: string; type: string }): boolean {
++  const type = (file.type || '').toLowerCase();
++  if (type.startsWith('text/')) return true;
++  if (
++    type === 'application/json' ||
++    type === 'application/xml' ||
++    type === 'application/javascript' ||
++    type === 'application/typescript' ||
++    type === 'application/x-javascript' ||
++    type === 'application/sql' ||
++    type === 'application/yaml' ||
++    type === 'application/x-yaml' ||
++    type === ''
++  ) {
++    return true;
++  }
++  return /\.(txt|md|markdown|json|csv|tsv|log|xml|html?|css|js|ts|tsx|jsx|py|sh|ya?ml|toml|ini|env|sql|r|rb|go|rs|java|c|cc|cpp|h|hpp|swift|kt|dart|vue|svelte)$/i.test(
++    file.name,
++  );
++}
++
++export function openLocalResultMessage(opened: number, skipped: number): string {
++  if (opened === 0) {
++    return skipped
++      ? 'No files opened. Pick text downloads under the size limit, or use Photo gallery for images and videos.'
++      : 'No files selected.';
++  }
++  if (skipped) {
++    return `Opened ${opened}. Skipped ${skipped} unsupported or oversized file${skipped === 1 ? '' : 's'}.`;
++  }
++  return opened === 1 ? 'Opened from this device’s downloads.' : `Opened ${opened} files from this device’s downloads.`;
++}
++
++/**
++ * Reads picks from the phone file picker (Downloads / Recents / Files).
++ * Files stay on this device as text notes — nothing is uploaded.
++ */
++export async function readLocalTextFiles(files: FileList | File[] | null | undefined): Promise<OpenLocalResult> {
++  const list = files ? Array.from(files) : [];
++  if (!list.length) {
++    return { opened: [], skipped: 0, message: openLocalResultMessage(0, 0) };
++  }
++
++  const opened: OpenLocalFile[] = [];
++  let skipped = 0;
++
++  for (const file of list) {
++    const name = file.name?.trim();
++    if (!name || !isLikelyTextFile(file)) {
++      skipped += 1;
++      continue;
++    }
++    if (typeof file.size === 'number' && file.size > MAX_FILE_CHARS) {
++      skipped += 1;
++      continue;
++    }
++    try {
++      const content = await file.text();
++      if (content.length > MAX_FILE_CHARS) {
++        skipped += 1;
++        continue;
++      }
++      opened.push({ name, content });
++    } catch {
++      skipped += 1;
++    }
++  }
++
++  return {
++    opened,
++    skipped,
++    message: openLocalResultMessage(opened.length, skipped),
++  };
++}
+diff --git a/src/components/widgets/FilesWidget.tsx b/src/components/widgets/FilesWidget.tsx
+index 8a4fa0a..c0e853a 100644
+--- a/src/components/widgets/FilesWidget.tsx
++++ b/src/components/widgets/FilesWidget.tsx
+@@ -1,5 +1,6 @@
+-import { useEffect, useMemo, useState } from 'react';
+-import { FileText, Folder, FolderOpen } from 'lucide-react';
++import { useEffect, useId, useMemo, useRef, useState } from 'react';
++import { FileText, Folder, FolderOpen, FolderUp } from 'lucide-react';
++import { readLocalTextFiles } from '@/adapters/files/openLocal';
+ import { handOffFile } from '@/adapters/files/send';
+ import { WidgetFrame } from '@/components/shell/WidgetFrame';
+ import { isPersistEnabled } from '@/store/persist';
+@@ -30,6 +31,9 @@ export function FilesWidget({ widget }: WidgetRenderProps) {
+   const [draft, setDraft] = useState('');
+   const [notice, setNotice] = useState<string | null>(null);
+   const [sending, setSending] = useState(false);
++  const [opening, setOpening] = useState(false);
++  const openInputRef = useRef<HTMLInputElement>(null);
++  const openInputId = useId();
+ 
+   useEffect(() => {
+     const folder = widget.settings?.folder;
+@@ -96,6 +100,27 @@ export function FilesWidget({ widget }: WidgetRenderProps) {
+     }
+   }
+ 
++  async function onOpenDeviceFiles(files: FileList | null) {
++    setOpening(true);
++    setNotice(null);
++    try {
++      const result = await readLocalTextFiles(files);
++      let firstId: string | null = null;
++      for (const file of result.opened) {
++        const id = addFile(currentFolderId, file.name, file.content);
++        if (id && !firstId) firstId = id;
++      }
++      if (firstId) {
++        const created = useFilesStore.getState().nodes.find((node) => node.id === firstId);
++        if (created) openFile(created);
++      }
++      setNotice(result.message);
++    } finally {
++      setOpening(false);
++      if (openInputRef.current) openInputRef.current.value = '';
++    }
++  }
++
+   return (
+     <WidgetFrame widget={widget} title="Files">
+       {opened ? (
+@@ -134,6 +159,24 @@ export function FilesWidget({ widget }: WidgetRenderProps) {
+               </span>
+             ))}
+           </div>
++          <button
++            type="button"
++            className="hud-btn-primary widget-no-drag mb-3 min-h-[48px] w-full"
++            disabled={opening}
++            onClick={() => openInputRef.current?.click()}
++          >
++            <FolderUp className="h-4 w-4" />
++            {opening ? 'Opening…' : 'Open File'}
++          </button>
++          <input
++            id={openInputId}
++            ref={openInputRef}
++            type="file"
++            multiple
++            className="hidden"
++            aria-label="Open downloaded files"
++            onChange={(event) => void onOpenDeviceFiles(event.target.files)}
++          />
+           <ul className="space-y-1">
+             {visible.map((node) => (
+               <li key={node.id} className="flex items-center gap-2 rounded-xl bg-white/5 px-2 py-2">
+@@ -163,6 +206,11 @@ export function FilesWidget({ widget }: WidgetRenderProps) {
+             ))}
+             {visible.length === 0 ? <li className="text-sm text-white/40">No files in this folder.</li> : null}
+           </ul>
++          {notice && !opened ? (
++            <p className="mt-2 text-sm leading-relaxed text-cyan-100/90" role="status">
++              {notice}
++            </p>
++          ) : null}
+           <form
+             className="mt-3 flex gap-2"
+             onSubmit={(event) => {
+@@ -199,7 +247,7 @@ export function FilesWidget({ widget }: WidgetRenderProps) {
+             </button>
+           </form>
+           <p className="mt-3 text-[11px] leading-relaxed text-white/40">
+-            Files stay in this browser. They are not stored on GitHub Pages or Vercel.
++            Open File brings up this phone’s Downloads and Files picker. Chosen text stays in this browser — nothing is uploaded to GitHub Pages or Vercel.
+           </p>
+         </>
+       )}
+-- 
+2.43.0
+
+
+From 7535b4e0b9f83b490996190ab7472a499313bd8a Mon Sep 17 00:00:00 2001
+From: Cursor Agent <cursoragent@cursor.com>
+Date: Sun, 11 Oct 2026 05:10:08 +0000
+Subject: [PATCH 2/2] Fix empty account layout Board shape for production
+ builds
+
+emptyLayout used name instead of title, which broke tsc on Vercel.
+---
+ api/_lib/accounts.ts | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/api/_lib/accounts.ts b/api/_lib/accounts.ts
+index 4073a97..ed41f42 100644
+--- a/api/_lib/accounts.ts
++++ b/api/_lib/accounts.ts
+@@ -1,4 +1,4 @@
+-import type { LayoutDocument } from '../../src/types/layout.ts';
++import { DEFAULT_BOARDS, type LayoutDocument } from '../../src/types/layout.ts';
+ 
+ export const ACCOUNTS_UNAVAILABLE =
+   "Sign-in is available on the Vercel site. This page stays on Casey's board.";
+@@ -186,7 +186,7 @@ async function saveUserLayout(userId: string, layout: LayoutDocument): Promise<v
+ }
+ 
+ function emptyLayout(now = Date.now()): LayoutDocument {
+-  return { version: 1, boards: [{ id: 'home', name: 'Home' }, { id: 'trading', name: 'Trading' }, { id: 'media', name: 'Media' }, { id: 'links', name: 'Links' }], widgets: [], updatedAt: now };
++  return { version: 1, boards: DEFAULT_BOARDS.map((board) => ({ ...board })), widgets: [], updatedAt: now };
+ }
+ 
+ export async function handleAccountsRequest(req: AccountRequest, res: AccountResponse, _nowMs = Date.now()): Promise<void> {
+-- 
+2.43.0
+
