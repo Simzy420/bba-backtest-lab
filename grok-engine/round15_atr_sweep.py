@@ -290,6 +290,18 @@ def run_backtest(all_data, regime_df):
         df = add_indicators(all_data[sym])
         df = df.merge(regime_df[["date", "regime"]], on="date", how="left")
         df["regime"] = df["regime"].ffill().fillna("TRANSITION")
+        # R15 FIX: align every asset to the regime date grid with last-known values.
+        # Missing rows (CoinGecko 4-day OHLC candles, holiday gaps) used to drop a
+        # position's margin from MTM (phantom DD) and made the DD-defense close skip
+        # the position, then `positions = []` silently deleted it (margin never returned).
+        grid = pd.DataFrame({"date": regime_df["date"].drop_duplicates().sort_values()})
+        grid["date"] = grid["date"].astype("datetime64[ns]")
+        src = df.drop(columns=["regime"]).sort_values("date").copy()
+        src["date"] = src["date"].astype("datetime64[ns]")
+        df = pd.merge_asof(grid, src, on="date", direction="backward")
+        df = df.merge(regime_df[["date", "regime"]], on="date", how="left")
+        df["regime"] = df["regime"].ffill().fillna("TRANSITION")
+        df = df.dropna(subset=["close"]).reset_index(drop=True)
         asset_dfs[sym] = df
 
     dates = regime_df["date"].drop_duplicates().sort_values().reset_index(drop=True)
@@ -334,7 +346,7 @@ def run_backtest(all_data, regime_df):
             for pos in list(positions):
                 sym_df = asset_dfs[pos.symbol]
                 row = sym_df[sym_df["date"] == date]
-                if row.empty: continue
+                if row.empty: row = sym_df[sym_df["date"] <= date].tail(1)
                 exit_price = row.iloc[0]["close"]
                 hold = (date - pos.entry_date).days
                 net, gross, fees, slip, funding = trade_pnl(pos, exit_price, hold)
@@ -347,7 +359,7 @@ def run_backtest(all_data, regime_df):
             for pos in list(positions):
                 sym_df = asset_dfs[pos.symbol]
                 row = sym_df[sym_df["date"] == date]
-                if row.empty: continue
+                if row.empty: row = sym_df[sym_df["date"] <= date].tail(1)
                 exit_price = row.iloc[0]["close"]
                 hold = (date - pos.entry_date).days
                 net, gross, fees, slip, funding = trade_pnl(pos, exit_price, hold)
@@ -482,6 +494,11 @@ def run_backtest(all_data, regime_df):
         cash += pos.total_margin() + net
         closed_trades.append(_trade_dict(pos, last_date, exit_price, hold, net, gross, fees, slip, funding, "BACKTEST_END"))
     positions = []
+    # R15 FIX: final equity = realized cash after BACKTEST_END closes (exit costs + funding included)
+    if equity_curve:
+        equity_curve[-1]["equity"] = round(cash, 2)
+        equity_curve[-1]["cash"] = round(cash, 2)
+        equity_curve[-1]["positions_open"] = 0
 
     return closed_trades, equity_curve, cash
 
