@@ -120,7 +120,8 @@ def metrics(r, n, gross, cost, years):
             "cost_pct_of_gross": round(cost / gross * 100, 1) if gross > 0 else None,
             "cagr_pct": round((eq.iloc[-1] ** (1 / years) - 1) * 100, 2)}
 
-def shield(mt): return mt["max_dd_pct"] > 20 or mt["trades_per_yr"] > 25
+TPY_CAP = float(os.environ.get("TPY_CAP", "25"))  # trade-frequency cap (trades/yr), used in training pick + Shield
+def shield(mt): return mt["max_dd_pct"] > 20 or mt["trades_per_yr"] > TPY_CAP
 
 LAB_R4C = os.path.join(HERE, "r4c_chop_filter_engine.py")
 LAB_R3 = os.path.join(HERE, "..", "bba-engine", "hl_backtest.py")
