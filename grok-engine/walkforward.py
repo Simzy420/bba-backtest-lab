@@ -129,7 +129,6 @@ STRATS = {
     "R4-C Druckenmiller": ("lab", LAB_R4C, "ATR_MULT", [0.9, 1.0, 1.1]),
     "R3 Druckenmiller":   ("lab", LAB_R3, "PULLBACK_PCT", [1.5, 2.0, 2.5]),
     "Trend MA cross":     ("vec", "trend_ma", None, [{"fast": 20, "slow": 100}, {"fast": 50, "slow": 200}, {"fast": 30, "slow": 150}]),
-    "Donchian trend":     ("vec", "donchian", None, [{"n": 20}, {"n": 55}, {"n": 100}]),
     "Breakout >200MA":    ("vec", "breakout_vol", None, [{"n": 20}, {"n": 40}, {"n": 60}]),
     "RSI mean-reversion": ("vec", "rsi_mr", None, [{"lo": 25, "hi": 55}, {"lo": 30, "hi": 55}, {"lo": 35, "hi": 60}]),
     "BTC buy-and-hold":   ("vec", "btc_hodl", None, [{}]),
