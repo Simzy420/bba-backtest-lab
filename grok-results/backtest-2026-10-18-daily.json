@@ -1,0 +1,106 @@
+{
+ "date": "2026-10-18",
+ "generated_at": "2026-10-18T19:24:41.635063-06:00",
+ "paper_only": true,
+ "baseline": "R4-C",
+ "engine": "grok-engine/fixed_engine.py",
+ "strategy_script": "grok-engine/r4c_chop_filter_engine.py",
+ "git_sha": "252295b74be0f7761de19db7467f0437874ba579",
+ "git_branch_source": "engine-fix-recheck",
+ "window": {
+  "start": "2025-10-18",
+  "end": "2026-10-18",
+  "days": 365
+ },
+ "notes": "Daily paper backtest. ATR hurdle sweep 0.9/1.0/1.1 via ATR_MULT env. VARIANT=r4c (TSLA on, hold 30d, BE exact). Fixed engine: yfinance daily + carry-forward + EOW cash close. Price cache refreshed for this run (last market date 2026-10-16, Sunday run). No blending.",
+ "shield_rules": {
+  "max_dd_pct": 20,
+  "max_trades_per_year": 25
+ },
+ "rows": [
+  {
+   "atr_mult": 0.9,
+   "label": "R4-C ATR 0.9x",
+   "baseline": false,
+   "total_return_pct": -11.15,
+   "max_drawdown_pct": 14.66,
+   "sharpe_ratio": -1.179,
+   "num_trades": 12,
+   "win_rate_pct": 16.67,
+   "final_equity": 1477.63,
+   "start_capital": 1663.0,
+   "cost_pct_of_gross": null,
+   "reconcile_gap": 0.0,
+   "shield_veto": false,
+   "shield": {
+    "veto": false,
+    "dd": 14.66,
+    "trades": 12,
+    "dd_limit_pct": 20,
+    "trades_limit": 25
+   },
+   "first_date": "2025-10-20",
+   "last_date": "2026-10-16",
+   "env": {
+    "VARIANT": "r4c",
+    "ATR_MULT": "0.9"
+   }
+  },
+  {
+   "atr_mult": 1.0,
+   "label": "R4-C ATR 1.0x",
+   "baseline": true,
+   "total_return_pct": 10.61,
+   "max_drawdown_pct": 8.49,
+   "sharpe_ratio": 1.094,
+   "num_trades": 9,
+   "win_rate_pct": 44.44,
+   "final_equity": 1839.44,
+   "start_capital": 1663.0,
+   "cost_pct_of_gross": 24.4,
+   "reconcile_gap": 0.01,
+   "shield_veto": false,
+   "shield": {
+    "veto": false,
+    "dd": 8.49,
+    "trades": 9,
+    "dd_limit_pct": 20,
+    "trades_limit": 25
+   },
+   "first_date": "2025-10-20",
+   "last_date": "2026-10-16",
+   "env": {
+    "VARIANT": "r4c",
+    "ATR_MULT": "1.0"
+   }
+  },
+  {
+   "atr_mult": 1.1,
+   "label": "R4-C ATR 1.1x",
+   "baseline": false,
+   "total_return_pct": 11.51,
+   "max_drawdown_pct": 9.26,
+   "sharpe_ratio": 1.017,
+   "num_trades": 7,
+   "win_rate_pct": 42.86,
+   "final_equity": 1854.33,
+   "start_capital": 1663.0,
+   "cost_pct_of_gross": 23.6,
+   "reconcile_gap": 0.01,
+   "shield_veto": false,
+   "shield": {
+    "veto": false,
+    "dd": 9.26,
+    "trades": 7,
+    "dd_limit_pct": 20,
+    "trades_limit": 25
+   },
+   "first_date": "2025-10-20",
+   "last_date": "2026-10-16",
+   "env": {
+    "VARIANT": "r4c",
+    "ATR_MULT": "1.1"
+   }
+  }
+ ]
+}
