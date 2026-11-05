@@ -12,7 +12,7 @@
   "end": "2026-11-04",
   "days": 365
  },
- "last_market_bar": "None",
+ "last_market_bar": "2026-11-05",
  "notes": "Daily paper backtest. ATR hurdle sweep 0.9/1.0/1.1 via ATR_MULT env. VARIANT=r4c. Fixed engine: daily prices + carry-forward. Price cache refreshed. No blending, no leverage beyond engine paper sizing.",
  "shield_rules": {
   "max_dd_pct": 20,
