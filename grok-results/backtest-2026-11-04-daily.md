@@ -1,6 +1,6 @@
 # Daily paper backtest 2026-11-04 (R4-C + ATR 0.9/1.1)
 
-Window 2025-11-04 to 2026-11-04, last market bar 754, engine sha 252295b (PR #10 still open). Paper only.
+Window 2025-11-04 to 2026-11-04, last market bar None, engine sha 252295b (PR #10 still open). Paper only.
 
 | Row | Return | Max DD | Sharpe | Trades | Shield |
 |---|---|---|---|---|---|
